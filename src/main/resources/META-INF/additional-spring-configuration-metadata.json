@@ -1,0 +1,15 @@
+{
+  "properties": [
+    {
+      "name": "openai.api.key",
+      "type": "java.lang.String",
+      "description": "API Key for OpenAI API integrations."
+    },
+    {
+      "name": "openai.model",
+      "type": "java.lang.String",
+      "defaultValue": "gpt-4o",
+      "description": "The OpenAI model to use for chat completions."
+    }
+  ]
+}

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAON EDU | 출결 관리</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="/css/common.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root { --blue:#2563eb; }
+  
+  /* ───── 페이지 전용 스타일 ───── */
+  .page-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+  .page-head h1 { font-size:22px; font-weight:800; letter-spacing:-.4px; margin:0; }
+  .page-head p { font-size:13px; color:var(--text-500); margin:5px 0 18px; }
+  svg.ic { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+
+  /* ───── 필터 바 ───── */
+  .filter-bar { background:var(--surface); border:1px solid var(--border); border-radius:15px; padding:14px 16px;
+                display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; margin-bottom:14px; }
+  .f-group { display:flex; flex-direction:column; gap:6px; }
+  .f-group label { font-size:11px; color:var(--text-400); font-weight:600; }
+  .f-group select, .f-group input { padding:9px 11px; border:1px solid var(--border); border-radius:9px; font-size:12.5px; background:var(--surface); color:var(--text-700); }
+  .f-group select {
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    padding-right:30px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a2b3' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 8px center; background-size:13px;
+  }
+  :root[data-theme="dark"] .f-group select {
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d7382' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
+  .btn { padding:9px 15px; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer;
+         border:1px solid var(--border); background:var(--surface); color:var(--text-700); display:flex; align-items:center; gap:6px; }
+  .btn.primary { background:var(--blue); color:#fff; border:none; }
+  .btn.reset { color:var(--blue); border-color:#bfdbfe; margin-left:auto; }
+
+  /* ───── 카드 ───── */
+  .cards { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:14px; }
+  .card { background:var(--surface); border-radius:15px; padding:15px 16px; border:1px solid var(--border); }
+  .card .t { font-size:12px; color:var(--text-500); font-weight:600; display:flex; align-items:center; gap:6px; }
+  .card .t .dot { width:8px; height:8px; border-radius:50%; }
+  .card .v { font-size:21px; font-weight:800; margin-top:6px; letter-spacing:-.4px; }
+  .card .v small { font-size:12px; font-weight:600; }
+  .card .d { font-size:11px; color:var(--text-400); margin-top:3px; }
+  .card .d .up{color:#16a34a;font-weight:700} .card .d .dn{color:#dc2626;font-weight:700}
+  .v.blue{color:var(--blue)} .v.green{color:#16a34a} .v.yellow{color:#ca8a04} .v.orange{color:#ea580c} .v.red{color:#dc2626}
+
+  .layout { display:grid; grid-template-columns:1fr 272px; gap:16px; align-items:start; }
+
+  /* ───── 그리드 패널 ───── */
+  .panel { background:var(--surface); border-radius:15px; border:1px solid var(--border); overflow:hidden; }
+  .panel-head { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px; }
+  .panel-head h3 { font-size:15px; font-weight:700; margin:0; }
+  .panel-head h3 span { font-size:12px; color:var(--text-400); font-weight:500; margin-left:6px; }
+  .ph-right { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .legend { display:flex; gap:11px; font-size:11px; color:var(--text-500); align-items:center; margin-right:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px; }
+  .btn.sm { padding:8px 12px; font-size:12px; }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th { text-align:center; padding:10px 6px; color:var(--text-400); font-size:11px; font-weight:600;
+             border-bottom:1px solid var(--border); white-space:nowrap; background:var(--page-bg); }
+  thead th.today { color:var(--blue); background:var(--blue-bg); border-radius:8px 8px 0 0; }
+  thead th:first-child { text-align:left; padding-left:14px; }
+  tbody td { padding:9px 6px; border-bottom:1px solid var(--border); text-align:center; vertical-align:middle; }
+  tbody td:first-child { text-align:left; padding-left:14px; }
+  tbody td.today { background:var(--blue-bg); }
+  tbody tr:hover { background:var(--page-bg); }
+  .stu { display:flex; align-items:center; gap:10px; }
+  .avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:12px; flex-shrink:0; overflow:hidden; background:var(--gray-bg, #f3f4f6); }
+  .avatar img { width:135%; height:135%; object-fit:cover; }
+  .stu .nm { font-weight:700; font-size:13px; } .stu .cls { font-size:11px; color:var(--text-400); margin-top:1px; }
+  .st { width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+  .st.p { background:#dcfce7; color:#16a34a; }
+  .st.l { background:#fef9c3; color:#ca8a04; }
+  .st.e { background:#ffedd5; color:#ea580c; }
+  .st.a { background:#fee2e2; color:#dc2626; }
+  .st.h { background:var(--gray-bg); color:var(--text-400); font-size:10px; font-weight:600; }
+  :root[data-theme="dark"] .st.p { background:var(--green-bg); color:var(--green); }
+  :root[data-theme="dark"] .st.l { background:var(--amber-bg); color:var(--amber); }
+  :root[data-theme="dark"] .st.e { background:var(--amber-bg); color:var(--amber); }
+  :root[data-theme="dark"] .st.a { background:var(--red-bg); color:var(--red); }
+  .wk { min-width:70px; }
+  .wk .pct { font-size:12.5px; font-weight:700; margin-bottom:4px; }
+  .wk .bar { height:5px; background:var(--gray-bg); border-radius:4px; overflow:hidden; margin:0 8px; }
+  .wk .bar i { display:block; height:100%; border-radius:4px; background:var(--blue); }
+  .streak-chip { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:#f0fdf4; color:#16a34a; }
+  .streak-chip.bad { background:#fef2f2; color:#dc2626; }
+  :root[data-theme="dark"] .streak-chip { background:var(--green-bg); color:var(--green); }
+  :root[data-theme="dark"] .streak-chip.bad { background:var(--red-bg); color:var(--red); }
+
+  /* ───── 우측 패널 ───── */
+  .side-card { background:var(--surface); border-radius:15px; border:1px solid var(--border); padding:16px; margin-bottom:14px; }
+  .side-card h3 { font-size:14px; font-weight:700; margin-bottom:12px; display:flex; justify-content:space-between; margin-top:0; }
+  .side-card h3 a { font-size:11px; color:var(--text-400); text-decoration:none; font-weight:500; }
+  .warn-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .warn-item:last-child { border-bottom:none; }
+  .warn-item .avatar { width:30px; height:30px; font-size:11px; }
+  .warn-item .info { flex:1; min-width:0; }
+  .warn-item .nm { font-size:13px; font-weight:700; } .warn-item .cls { font-size:11px; color:var(--text-400); }
+  .warn-badge { font-size:10.5px; font-weight:700; color:#dc2626; background:#fef2f2; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+  :root[data-theme="dark"] .warn-badge { background:var(--red-bg); color:var(--red); }
+  .top5-item { display:flex; align-items:center; gap:8px; padding:7px 0; font-size:12px; }
+  .top5-item .no { color:var(--text-400); width:14px; font-weight:600; }
+  .top5-item .cls-nm { flex:1.2; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top5-item .bar { flex:1; height:6px; background:var(--gray-bg); border-radius:4px; overflow:hidden; }
+  .top5-item .bar i { display:block; height:100%; background:var(--blue); border-radius:4px; }
+  .top5-item .pct { width:46px; text-align:right; font-weight:700; }
+  .ai-card .tag { font-size:10.5px; font-weight:800; color:var(--blue); background:var(--blue-bg); border-radius:6px; padding:2px 8px; display:inline-block; }
+  .ai-card p { font-size:12px; color:var(--text-700); line-height:1.6; margin:9px 0 11px; }
+  .ai-card button { width:100%; }
+  .donut-wrap { position:relative; width:160px; margin:6px auto 0; }
+  .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+  .donut-center .big { font-size:21px; font-weight:800; color:var(--blue); }
+  .donut-center .sub { font-size:11px; color:var(--text-400); }
+  .donut-legend { font-size:11px; color:var(--text-500); margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+</style>
+</head>
+<body data-page="attendance">
+<div class="app">
+  <div data-include="/partials/sidebar.html"></div>
+  <div class="main">
+    <div data-include="/partials/topbar.html"></div>
+    <main class="content">
+
+      <div class="page-head">
+        <h1>출결 관리 <span id="todayChip" style="font-size: 13px; font-weight: 500; margin-left: 8px; vertical-align: middle; background-color: var(--blue-bg); color: var(--blue); padding: 3px 10px; border-radius: 20px; display: inline-block;"></span></h1>
+        <p>학생들의 출결 현황을 한눈에 확인하고 관리할 수 있습니다.</p>
+      </div>
+
+      <div class="filter-bar">
+        <div class="f-group"><label>기간</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="date" id="fStart"> <span style="color:var(--text-400)">~</span> <input type="date" id="fEnd">
+          </div></div>
+        <div class="f-group"><label>과정</label>
+          <select id="fCategory"><option value="">전체 과정</option>
+            <option>IT</option><option>회계</option><option>기계</option><option>그래픽·멀티미디어</option></select></div>
+        <div class="f-group"><label>기수</label><select id="fClass"><option value="">전체 기수</option></select></div>
+        <div class="f-group"><label>강사</label>
+          <select id="fInstructor"><option value="">전체 강사</option>
+            <option>한지우</option><option>임동현</option><option>박성호</option><option>오수빈</option>
+            <option>김택수</option><option>정재문</option><option>최지원</option><option>이하늘</option></select></div>
+        <div class="f-group"><label>출결 상태</label>
+          <select id="fStatus"><option value="">전체</option>
+            <option>출석</option><option>지각</option><option>조퇴</option><option>결석</option></select></div>
+        <button class="btn reset" id="btnReset"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>필터 초기화</button>
+      </div>
+
+      <div class="cards">
+        <div class="card"><div class="t">오늘 출석률</div><div class="v blue" id="cRate">—</div><div class="d" id="dRate">어제 대비</div></div>
+        <div class="card"><div class="t"><span class="dot" style="background:#16a34a"></span>출석</div><div class="v green" id="cPresent">—</div><div class="d"><span class="up">▲ 8명</span></div></div>
+        <div class="card"><div class="t"><span class="dot" style="background:#facc15"></span>지각</div><div class="v yellow" id="cLate">—</div><div class="d"><span class="dn">▲ 2명</span></div></div>
+        <div class="card"><div class="t"><span class="dot" style="background:#fb923c"></span>조퇴</div><div class="v orange" id="cEarly">—</div><div class="d">— 0명</div></div>
+        <div class="card"><div class="t"><span class="dot" style="background:#f87171"></span>결석</div><div class="v red" id="cAbsent">—</div><div class="d"><span class="up">▼ 3명</span></div></div>
+      </div>
+
+      <div class="layout">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>학생 출결 현황 <span id="gridCount"></span></h3>
+            <div class="ph-right">
+              <div class="legend">
+                <span><span class="dot" style="background:#16a34a"></span>출석</span>
+                <span><span class="dot" style="background:#facc15"></span>지각</span>
+                <span><span class="dot" style="background:#fb923c"></span>조퇴</span>
+                <span><span class="dot" style="background:#f87171"></span>결석</span>
+                <span><span class="dot" style="background:#cbd5e1"></span>휴강/공휴일</span>
+              </div>
+              <button class="btn sm"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>엑셀 다운로드</button>
+              <button class="btn sm primary">＋ 출결 등록</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <table style="width:100%; border-collapse:collapse;">
+                <thead id="thead"></thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card">
+            <h3>연속 결석 경고 <a href="#">전체 보기 ›</a></h3>
+            <div id="warnList"></div>
+          </div>
+          <div class="side-card">
+            <h3>과정별 출석률 TOP 5 <a href="#">전체 보기 ›</a></h3>
+            <div id="top5List"></div>
+          </div>
+          <div class="side-card ai-card">
+            <span class="tag">AI 안내</span>
+            <p id="aiText">이번 주 연속 결석 2일 이상 학생을 확인했어요. 개별 연락 및 상담을 진행해보세요.</p>
+            <button id="btnAiTarget" class="btn sm primary" style="justify-content:center">대상자 보기</button>
+          </div>
+          <div class="side-card">
+            <h3>이번 주 출석률</h3>
+            <div class="donut-wrap">
+              <canvas id="donut" width="160" height="160"></canvas>
+              <div class="donut-center"><div class="big" id="donutRate">—</div><div class="sub">출석률</div></div>
+            </div>
+            <div class="donut-legend" id="donutLegend"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/js/include.js"></script>
+<script src="/js/task-banner.js"></script>
+<script>
+const DAY_KR = ["일","월","화","수","목","금","토"];
+function avatarSrc(gender){ return gender==="여" ? "/images/default_avatar_woman.png" : "/images/default_avatar_man.png"; }
+let TODAY = null;
+let donutChart = null;
+let gridCache = null;
+
+function stCell(st){
+  switch(st){
+    case "출석": return '<span class="st p">✓</span>';
+    case "지각": return '<span class="st l">!</span>';
+    case "조퇴": return '<span class="st e">◐</span>';
+    case "결석": return '<span class="st a">✕</span>';
+    case "휴":   return '<span class="st h">휴</span>';
+    default:     return '<span style="color:#cbd5e1">–</span>';
+  }
+}
+
+async function loadSummary(setDates = true){
+  const s = await (await fetch("/api/attendance/summary")).json();
+  TODAY = s.date;
+  const d = new Date(s.date);
+  todayChip.textContent = s.date.replaceAll("-",".") + " (" + DAY_KR[d.getDay()] + ")";
+  cRate.innerHTML = s.attendanceRate + "<small>%</small>";
+  dRate.innerHTML = '<span class="up">▲ 1.4%p</span> 어제 대비';
+  cPresent.innerHTML = s.present + "<small>명</small>";
+  cLate.innerHTML = s.late + "<small>명</small>";
+  cEarly.innerHTML = s.earlyLeave + "<small>명</small>";
+  cAbsent.innerHTML = s.absent + "<small>명</small>";
+  if (setDates) {
+    const end = new Date(s.date); const start = new Date(end); start.setDate(end.getDate()-6);
+    fStart.value = start.toISOString().slice(0,10);
+    fEnd.value = s.date;
+  }
+}
+
+async function loadClasses(){
+  const list = await (await fetch("/api/students/class-names")).json();
+  for(const c of list){ const o=document.createElement("option"); o.textContent=c; fClass.appendChild(o); }
+}
+
+async function loadGrid(){
+  const p = new URLSearchParams();
+  if(fStart.value) p.set("start",fStart.value);
+  if(fEnd.value) p.set("end",fEnd.value);
+  if(fClass.value) p.set("className",fClass.value);
+  if(fCategory.value) p.set("category",fCategory.value);
+  if(fInstructor.value) p.set("instructor",fInstructor.value);
+  gridCache = await (await fetch("/api/attendance/grid?"+p)).json();
+  renderGrid();
+}
+
+function renderGrid(){
+  const g = gridCache; if(!g) return;
+  const stFilter = fStatus.value;
+
+  let head = "<tr><th>학생</th>";
+  for(const d of g.dates){
+    const dt = new Date(d);
+    const cls = (d===TODAY) ? ' class="today"' : "";
+    head += `<th${cls}>${String(dt.getMonth()+1).padStart(2,"0")}.${String(dt.getDate()).padStart(2,"0")}<br>(${DAY_KR[dt.getDay()]})</th>`;
+  }
+  head += "<th>이번 주<br>출석률</th><th>연속<br>결석</th></tr>";
+  thead.innerHTML = head;
+
+  let rows = g.rows;
+  if(stFilter) rows = rows.filter(r => Object.values(r.statuses).includes(stFilter));
+
+  tbody.innerHTML = rows.map(r=>{
+    let tds = "";
+    for(const d of g.dates){
+      const cls = (d===TODAY) ? ' class="today"' : "";
+      tds += `<td${cls}>${stCell(r.statuses[d])}</td>`;
+    }
+    const streak = r.absentStreak>0
+      ? `<span class="streak-chip bad">${r.absentStreak}일</span>`
+      : `<span class="streak-chip">0일</span>`;
+    return `<tr>
+      <td><div class="stu">
+        <div class="avatar"><img src="${avatarSrc(r.gender)}" alt="" /></div>
+        <div><div class="nm">${r.name}</div><div class="cls">${r.className}</div></div>
+      </div></td>
+      ${tds}
+      <td class="wk"><div class="pct" style="color:${r.weekRate<60?'#dc2626':(r.weekRate<80?'#ea580c':'#16a34a')}">${r.weekRate}%</div><div class="bar"><i style="width:${r.weekRate}%"></i></div></td>
+      <td>${streak}</td>
+    </tr>`;
+  }).join("");
+  gridCount.textContent = `총 ${rows.length}명`;
+}
+
+async function loadWarnings(){
+  const list = await (await fetch("/api/attendance/streak-warnings")).json();
+  warnList.innerHTML = list.length===0 ? '<div style="font-size:12px;color:var(--text-400)">연속 결석 학생이 없습니다.</div>'
+    : list.map(w=>`
+    <div class="warn-item">
+      <div class="avatar"><img src="${avatarSrc(w.gender)}" alt="" /></div>
+      <div class="info"><div class="nm">${w.name}</div><div class="cls">${w.className}</div></div>
+      <span class="warn-badge">연속 결석 ${w.streak}일</span>
+    </div>`).join("");
+  if(list.length>0) {
+    try {
+      const aiRes = await (await fetch("/api/attendance/ai-analysis")).json();
+      aiText.textContent = aiRes.analysis;
+    } catch(e) {
+      aiText.textContent = `이번 주 연속 결석 2일 이상 학생이 ${list.length}명 있어요. 개별 연락 및 상담을 진행해보세요.`;
+    }
+  } else {
+    aiText.textContent = "이번 주 연속 결석생이 없습니다. 양호한 출결 상태입니다.";
+  }
+}
+
+async function loadTop5(){
+  const list = await (await fetch("/api/attendance/class-top5")).json();
+  top5List.innerHTML = list.map((c,i)=>`
+    <div class="top5-item">
+      <span class="no">${i+1}</span>
+      <span class="cls-nm">${c.className}</span>
+      <div class="bar"><i style="width:${c.rate}%"></i></div>
+      <span class="pct">${c.rate}%</span>
+    </div>`).join("");
+}
+
+async function loadDonut(){
+  const w = await (await fetch("/api/attendance/weekly")).json();
+  donutRate.textContent = w.rate + "%";
+  const data = [w.present, w.late, w.earlyLeave, w.absent];
+  const colors = ["#2563eb","#facc15","#fb923c","#f87171"];
+  if(donutChart) donutChart.destroy();
+  donutChart = new Chart(donut, {
+    type:"doughnut",
+    data:{ labels:["출석","지각","조퇴","결석"], datasets:[{data, backgroundColor:colors, borderWidth:0}] },
+    options:{ cutout:"72%", plugins:{ legend:{display:false} } }
+  });
+  const total = data.reduce((a,b)=>a+b,0)||1;
+  donutLegend.innerHTML = ["출석","지각","조퇴","결석"].map((l,i)=>
+    `<span><span class="dot" style="background:${colors[i]}"></span>${l} ${data[i]}건 (${(data[i]*100/total).toFixed(1)}%)</span>`).join("");
+}
+
+btnReset.onclick = async ()=>{ fCategory.value=""; fClass.value=""; fInstructor.value=""; fStatus.value=""; fStart.value=""; fEnd.value=""; await loadSummary(false); loadGrid(); };
+[fCategory,fClass,fInstructor].forEach(el=>el.onchange=loadGrid);
+[fStart,fEnd].forEach(el=>el.onchange=loadGrid);
+fStatus.onchange = renderGrid;
+
+document.getElementById("btnAiTarget").onclick = () => {
+  if (gridCache) {
+    const originalRows = gridCache.rows;
+    gridCache.rows = originalRows.filter(r => r.absentStreak >= 2);
+    renderGrid();
+    gridCache.rows = originalRows;
+  }
+};
+
+(async () => {
+  await loadSummary();
+  await loadClasses();
+  await Promise.all([loadGrid(), loadWarnings(), loadTop5(), loadDonut()]);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAON EDU | 대시보드</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="/css/common.css" />
+</head>
+<body data-page="dashboard">
+<div class="app">
+  <div data-include="/partials/sidebar.html"></div>
+  <div class="main">
+    <div data-include="/partials/topbar.html"></div>
+    <main class="content">
+
+      <!-- 인사말 — 카드 아님. 배경 위에 직접 그려지는 영역 -->
+      <section class="hero">
+        <div class="hero-text">
+          <h1>김다온 원장님, 오늘도 운영이 매끄럽게 진행되고 있어요.</h1>
+          <p>오늘도 교육 현장을 빛내주셔서 감사합니다. 함께 성장하는 DAON EDU가 되겠습니다.</p>
+          <div class="hero-insight">
+            <span class="icon i-star-fill"></span>
+            <span id="ai-insight-text"><strong>오늘의 AI 인사이트</strong> · 분석 결과를 불러오는 중입니다...</span>
+          </div>
+        </div>
+        <img class="hero-illust" src="/images/illust_01.png" alt="" />
+        <!-- 일러스트 주변을 떠다니는 먼지 입자 (장식용) -->
+        <div class="hero-particles" aria-hidden="true">
+          <span class="particle p1"></span>
+          <span class="particle p2"></span>
+          <span class="particle p3"></span>
+          <span class="particle p4"></span>
+          <span class="particle p5"></span>
+          <span class="particle p6"></span>
+          <span class="particle p7"></span>
+        </div>
+      </section>
+
+      <!-- KPI 6칸 -->
+      <section class="kpi-grid">
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-blue"><span class="icon i-people-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">전체 수강생</div>
+            <div class="kpi-value"><span id="kpi-total-students">1,248</span><span class="kpi-unit">명</span></div>
+            <div class="kpi-delta"><span class="up">↑ 76명</span> · 지난주 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-green"><span class="icon i-person-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">신규 리드</div>
+            <div class="kpi-value">236<span class="kpi-unit">건</span></div>
+            <div class="kpi-delta"><span class="up">↑ 18건</span> · 지난주 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-amber"><span class="icon i-percent-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">등록 전환율</div>
+            <div class="kpi-value">28.6<span class="kpi-unit">%</span></div>
+            <div class="kpi-delta"><span class="up">↑ 3.2%p</span> · 지난주 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-blue"><span class="icon i-calendar-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">출석률</div>
+            <div class="kpi-value"><span id="kpi-attendance-rate">92.4</span><span class="kpi-unit">%</span></div>
+            <div class="kpi-delta"><span class="up">↑ 1.8%p</span> · 지난주 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-green"><span class="icon i-grad-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">수료율</div>
+            <div class="kpi-value">76.1<span class="kpi-unit">%</span></div>
+            <div class="kpi-delta"><span class="up">↑ 2.6%p</span> · 지난주 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-purple"><span class="icon i-briefcase-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">취업률</div>
+            <div class="kpi-value">68.3<span class="kpi-unit">%</span></div>
+            <div class="kpi-delta"><span class="up">↑ 4.1%p</span> · 지난주 대비</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 위험 학생 / 오늘 상담 / AI 추천 / 후속 연락 -->
+      <section class="panel-row">
+
+        <div class="card panel panel-tall">
+          <div class="panel-head">
+            <span class="icon i-warning c-red"></span>
+            <div class="panel-title">위험 학생 리스트</div>
+            <a class="more-link" href="#">더보기</a>
+          </div>
+          <div class="list list-scroll" id="at-risk-student-list">
+            <div class="list-row">
+              <div class="row-main">
+                <div class="row-title" style="color: var(--text-500);">데이터를 로드하는 중...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel panel-tall">
+          <div class="panel-head">
+            <span class="icon i-call c-green"></span>
+            <div class="panel-title">후속 연락 대상</div>
+            <a class="more-link" href="#">더보기</a>
+          </div>
+          <div class="list list-scroll" id="follow-up-list">
+            <div class="list-row">
+              <div class="row-main">
+                <div class="row-title" style="color: var(--text-500);">데이터를 로드하는 중...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel panel-tall">
+          <div class="panel-head">
+            <span class="icon i-calendar c-blue"></span>
+            <div class="panel-title">오늘 상담 일정</div>
+            <a class="more-link" href="#">더보기</a>
+          </div>
+          <div class="list list-timed list-scroll" id="today-counseling-list">
+            <div class="list-row">
+              <div class="row-main">
+                <div class="row-title" style="color: var(--text-500);">데이터를 로드하는 중...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OpenAI 연동으로 채워지는 AI 추천 업무 -->
+        <div class="card panel panel-tall">
+          <div class="panel-head">
+            <span class="icon i-star c-blue"></span>
+            <div class="panel-title">AI 추천 업무 <span id="ai-mock-badge" style="display:none; font-size:10px; font-weight:normal; color:#f2b53d; margin-left:8px;">(Mock 모드)</span></div>
+          </div>
+          <div class="list list-scroll" id="ai-task-list">
+            <div class="list-row">
+              <div class="row-main">
+                <div class="row-title" style="color: var(--text-500);">데이터를 분석하는 중...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 퍼널 / 출석 현황 / 과정·기수 성과 / 최근 활동 -->
+      <section class="panel-row">
+
+        <div class="card panel panel-taller">
+          <div class="panel-head">
+            <div class="panel-title">상담 → 등록 퍼널</div>
+            <div class="dropdown" style="position: relative;" id="funnelDropdown">
+              <button class="panel-select" type="button" id="funnelDropdownBtn" aria-haspopup="true" aria-expanded="false" style="background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer;">
+                <span id="funnelDropdownLabel">전체 기간</span>
+                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width: 12px; height: 12px; margin-left: 2px;"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" id="funnelDropdownMenu" hidden></div>
+            </div>
+          </div>
+          <div class="funnel-stages">
+            <div class="funnel-stage">
+              <div class="funnel-stage-label">상담 신청</div>
+              <div class="funnel-stage-value" id="funnel-stage-applied-val">1,248</div>
+              <div class="funnel-stage-delta up">▲ 12.3%</div>
+            </div>
+            <div class="funnel-stage">
+              <div class="funnel-stage-label">상담 진행</div>
+              <div class="funnel-stage-value" id="funnel-stage-in-progress-val">823</div>
+              <div class="funnel-stage-delta down">▼ 2.1%</div>
+            </div>
+            <div class="funnel-stage">
+              <div class="funnel-stage-label">등록 상담</div>
+              <div class="funnel-stage-value" id="funnel-stage-reg-consult-val">412</div>
+              <div class="funnel-stage-delta up">▲ 5.7%</div>
+            </div>
+            <div class="funnel-stage">
+              <div class="funnel-stage-label">등록 완료</div>
+              <div class="funnel-stage-value" id="funnel-stage-enrolled-val">227</div>
+              <div class="funnel-stage-delta up">▲ 8.9%</div>
+            </div>
+          </div>
+          <div class="funnel-summary">
+            <div class="funnel-summary-main" id="funnel-summary-main-val">전환율 28.7%</div>
+            <div class="funnel-summary-sub">지난 달 대비 <span class="up">▲ 3.5%p</span></div>
+          </div>
+        </div>
+
+        <div class="card panel panel-taller">
+          <div class="panel-head">
+            <div class="panel-title">출석 현황</div>
+            <div class="dropdown" style="position: relative;" id="attendanceDropdown">
+              <button class="panel-select" type="button" id="attendanceDropdownBtn" aria-haspopup="true" aria-expanded="false" style="background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer;">
+                <span id="attendanceDropdownLabel">전체 기간</span>
+                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width: 12px; height: 12px; margin-left: 2px;"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" id="attendanceDropdownMenu" hidden></div>
+            </div>
+          </div>
+          <div class="donut-wrap">
+            <svg class="donut-svg" id="donut-chart-svg" width="185" height="185" viewBox="0 0 160 160" role="img" aria-label="출석률 92.4%">
+              <!-- r=66, stroke 26 → 바깥 반지름 79로 viewBox(80) 안에 들어온다 -->
+              <g transform="rotate(-90 80 80)">
+                <circle cx="80" cy="80" r="66" fill="none" stroke="#eef1f5" stroke-width="26" />
+                <circle id="donut-circle-attendance" cx="80" cy="80" r="66" fill="none" stroke="#2f6fed" stroke-width="26"
+                        stroke-dasharray="383.17 414.69" stroke-dashoffset="0" />
+                <circle id="donut-circle-late" cx="80" cy="80" r="66" fill="none" stroke="#12b76a" stroke-width="26"
+                        stroke-dasharray="20.73 414.69" stroke-dashoffset="-383.17" />
+                <circle id="donut-circle-absent" cx="80" cy="80" r="66" fill="none" stroke="#f2b53d" stroke-width="26"
+                        stroke-dasharray="10.78 414.69" stroke-dashoffset="-403.90" />
+              </g>
+              <text x="80" y="75" text-anchor="middle" style="font-size:11px;fill:#667085;font-weight:500">출석률</text>
+              <text id="donut-percentage-text" x="80" y="97" text-anchor="middle" style="font-size:20px;fill:#101828;font-weight:700">92.4%</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="donut-legend-row">
+                <span class="dot" style="background:#2f6fed"></span>
+                <span><span class="label">출석</span><span class="value" id="legend-attendance-val">1,154명 (92.4%)</span></span>
+              </div>
+              <div class="donut-legend-row">
+                <span class="dot" style="background:#12b76a"></span>
+                <span><span class="label">지각</span><span class="value" id="legend-late-val">62명 (5.0%)</span></span>
+              </div>
+              <div class="donut-legend-row">
+                <span class="dot" style="background:#f2b53d"></span>
+                <span><span class="label">결석</span><span class="value" id="legend-absent-val">32명 (2.6%)</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel panel-taller">
+          <div class="panel-head">
+            <div class="panel-title">과정/기수 성과</div>
+            <div class="dropdown" style="position: relative;" id="performanceDropdown">
+              <button class="panel-select" type="button" id="performanceDropdownBtn" aria-haspopup="true" aria-expanded="false" style="background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer;">
+                <span id="performanceDropdownLabel">전체 기간</span>
+                <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width: 12px; height: 12px; margin-left: 2px;"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" id="performanceDropdownMenu" hidden></div>
+            </div>
+          </div>
+          <div class="chart-legend chart-legend-row">
+            <span class="item"><span class="dot" style="background:#2f6fed"></span>수료율</span>
+            <span class="item"><span class="dot" style="background:#12b76a"></span>취업률</span>
+          </div>
+          <div class="linechart-wrap">
+            <svg viewBox="0 0 320 230" role="img" aria-label="기수별 수료율·취업률 추이" id="performance-chart-svg">
+              <!-- 가로 눈금선 -->
+              <line x1="30" y1="20" x2="318" y2="20" stroke="#eef1f5" />
+              <line x1="30" y1="65" x2="318" y2="65" stroke="#eef1f5" />
+              <line x1="30" y1="110" x2="318" y2="110" stroke="#eef1f5" />
+              <line x1="30" y1="155" x2="318" y2="155" stroke="#eef1f5" />
+              <line x1="30" y1="200" x2="318" y2="200" stroke="#eef1f5" />
+
+              <text x="0" y="24" style="font-size:10px;fill:#98a2b3">100%</text>
+              <text x="6" y="69" style="font-size:10px;fill:#98a2b3">75%</text>
+              <text x="6" y="114" style="font-size:10px;fill:#98a2b3">50%</text>
+              <text x="6" y="159" style="font-size:10px;fill:#98a2b3">25%</text>
+              <text x="12" y="204" style="font-size:10px;fill:#98a2b3">0%</text>
+
+              <g id="performance-chart-lines-group"></g>
+            </svg>
+            <div class="x-labels" id="performance-x-labels">
+              <span>2월</span><span>3월</span><span>4월</span><span>5월</span><span>6월</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel panel-taller">
+          <div class="panel-head">
+            <div class="panel-title">최근 활동/알림</div>
+            <a class="more-link" href="#" id="recent-activities-more-btn">더보기</a>
+          </div>
+          <div class="list list-activity" id="recent-activity-list">
+            <!-- JS가 실시간 데이터를 바인딩합니다 -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="/js/include.js"></script>
+<script>
+  let currentPeriod = "전체 기간";
+  const PERIODS = ["전체 기간", "이번 달", "지난 달", "최근 3개월"];
+
+  function setupDashboardDropdown(wrapId, btnId, menuId, labelId, onChange) {
+    const btn = document.getElementById(btnId);
+    const menu = document.getElementById(menuId);
+    const label = document.getElementById(labelId);
+
+    function renderMenu() {
+      menu.innerHTML = PERIODS.map(p => `
+        <button type="button" class="dropdown-option ${currentPeriod === p ? 'active' : ''}" data-value="${p}">${p}</button>
+      `).join("");
+    }
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = menu.hasAttribute("hidden");
+      document.querySelectorAll(".dropdown-menu").forEach(m => m.setAttribute("hidden", ""));
+      if (isHidden) {
+        renderMenu();
+        menu.removeAttribute("hidden");
+      }
+    });
+
+    menu.addEventListener("click", (e) => {
+      const opt = e.target.closest(".dropdown-option");
+      if (!opt) return;
+      const val = opt.getAttribute("data-value");
+      menu.setAttribute("hidden", "");
+      onChange(val);
+    });
+    
+    return {
+      updateLabel: () => { label.textContent = currentPeriod; }
+    };
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const dropdownControls = [];
+
+    const onPeriodChange = (newPeriod) => {
+      currentPeriod = newPeriod;
+      dropdownControls.forEach(ctrl => ctrl.updateLabel());
+      fetchDashboardData(currentPeriod);
+    };
+
+    dropdownControls.push(setupDashboardDropdown("funnelDropdown", "funnelDropdownBtn", "funnelDropdownMenu", "funnelDropdownLabel", onPeriodChange));
+    dropdownControls.push(setupDashboardDropdown("attendanceDropdown", "attendanceDropdownBtn", "attendanceDropdownMenu", "attendanceDropdownLabel", onPeriodChange));
+    dropdownControls.push(setupDashboardDropdown("performanceDropdown", "performanceDropdownBtn", "performanceDropdownMenu", "performanceDropdownLabel", onPeriodChange));
+
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".dropdown-menu").forEach(m => m.setAttribute("hidden", ""));
+    });
+
+    // 최근 활동 "더보기" 클릭 시 학생 목록으로 이동하는 샘플 액션
+    const moreBtn = document.getElementById("recent-activities-more-btn");
+    if (moreBtn) {
+      moreBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.href = "/pages/students.html";
+      });
+    }
+
+    // 초기 데이터 조회
+    fetchDashboardData(currentPeriod);
+  });
+
+  function fetchDashboardData(period) {
+    const pulseTargets = ".kpi-value, .kpi-delta, .funnel-stages, .funnel-summary, .donut-wrap, .linechart-wrap";
+    document.querySelectorAll(pulseTargets).forEach(el => {
+      el.classList.remove("data-refresh");
+      void el.offsetWidth;
+      el.classList.add("data-refresh");
+    });
+
+    const url = `/api/ai/dashboard?period=${encodeURIComponent(period)}`;
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        return res.json();
+      })
+      .then(data => {
+        // 1. 오늘의 AI 인사이트 업데이트
+        const insightEl = document.getElementById("ai-insight-text");
+        if (insightEl && data.insight) {
+          insightEl.innerHTML = `<strong>오늘의 AI 인사이트</strong> · ${data.insight}`;
+        }
+
+        // 2. AI 추천 업무 업데이트
+        const taskListEl = document.getElementById("ai-task-list");
+        if (taskListEl && data.tasks) {
+          taskListEl.innerHTML = "";
+          if (data.tasks.length === 0) {
+            taskListEl.innerHTML = `
+              <div class="list-row">
+                <div class="row-main">
+                  <div class="row-title" style="color: var(--text-500);">모든 추천 업무를 완료했습니다! 🎉</div>
+                </div>
+              </div>
+            `;
+          } else {
+            data.tasks.forEach((task, index) => {
+              const row = document.createElement("div");
+              row.className = "list-row task-row";
+
+              const iconColors = ["bg-blue", "bg-green", "bg-amber", "bg-purple"];
+              const bgClass = iconColors[index % iconColors.length];
+              const targetUrl = getTaskTargetUrl(task);
+
+              row.innerHTML = `
+                <div class="activity-icon ${bgClass}">
+                  <span class="icon i-star-fill" style="width:14px; height:14px; background-color:#fff;"></span>
+                </div>
+                <div class="row-main">
+                  <div class="row-title">${task}</div>
+                  <div class="row-sub">클릭하여 업무 페이지로 이동</div>
+                </div>
+                <span class="badge badge-blue" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                  조치
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </span>
+              `;
+
+              row.addEventListener("mouseenter", () => { row.style.background = "var(--blue-bg)"; });
+              row.addEventListener("mouseleave", () => { row.style.background = ""; });
+              row.addEventListener("click", () => {
+                const url = targetUrl + "?task=" + encodeURIComponent(task);
+                window.location.href = url;
+              });
+              taskListEl.appendChild(row);
+            });
+          }
+        }
+
+        // 3. 출석률 및 전체 수강생 KPI 동적 업데이트
+        if (data.stats) {
+          const totalStEl = document.getElementById("kpi-total-students");
+          if (totalStEl) totalStEl.textContent = data.stats.totalStudents.toLocaleString();
+
+          const attRateEl = document.getElementById("kpi-attendance-rate");
+          if (attRateEl) attRateEl.textContent = data.stats.averageAttendance;
+
+          const donutPercentEl = document.getElementById("donut-percentage-text");
+          if (donutPercentEl) donutPercentEl.textContent = data.stats.averageAttendance + "%";
+
+          // 도넛 차트 SVG 서클 업데이트
+          const circ = 414.69;
+          const attLen = (data.stats.attendancePercentage / 100) * circ;
+          const lateLen = (data.stats.latePercentage / 100) * circ;
+          const absLen = (data.stats.absentPercentage / 100) * circ;
+
+          const attCircle = document.getElementById("donut-circle-attendance");
+          const lateCircle = document.getElementById("donut-circle-late");
+          const absCircle = document.getElementById("donut-circle-absent");
+
+          if (attCircle) attCircle.setAttribute("stroke-dasharray", `${attLen} ${circ}`);
+          if (lateCircle) {
+            lateCircle.setAttribute("stroke-dasharray", `${lateLen} ${circ}`);
+            lateCircle.setAttribute("stroke-dashoffset", -attLen);
+          }
+          if (absCircle) {
+            absCircle.setAttribute("stroke-dasharray", `${absLen} ${circ}`);
+            absCircle.setAttribute("stroke-dashoffset", -(attLen + lateLen));
+          }
+
+          // 도넛 차트 범례 업데이트
+          const legAtt = document.getElementById("legend-attendance-val");
+          const legLate = document.getElementById("legend-late-val");
+          const legAbs = document.getElementById("legend-absent-val");
+
+          if (legAtt) legAtt.textContent = `${data.stats.attendanceCount.toLocaleString()}명 (${data.stats.attendancePercentage}%)`;
+          if (legLate) legLate.textContent = `${data.stats.lateCount.toLocaleString()}명 (${data.stats.latePercentage}%)`;
+          if (legAbs) legAbs.textContent = `${data.stats.absentCount.toLocaleString()}명 (${data.stats.absentPercentage}%)`;
+        }
+
+        // 4. 퍼널 데이터 동적 업데이트
+        if (data.funnelStages) {
+          document.getElementById("funnel-stage-applied-val").textContent = data.funnelStages.applied.toLocaleString();
+          document.getElementById("funnel-stage-in-progress-val").textContent = data.funnelStages.inProgress.toLocaleString();
+          document.getElementById("funnel-stage-reg-consult-val").textContent = data.funnelStages.regConsult.toLocaleString();
+          document.getElementById("funnel-stage-enrolled-val").textContent = data.funnelStages.enrolled.toLocaleString();
+          document.getElementById("funnel-summary-main-val").textContent = `전환율 ${data.funnelStages.conversionRate}%`;
+        }
+
+        // 5. 과정/기수 성과 선형 차트 렌더링
+        if (data.performance && data.performance.length > 0) {
+          renderPerformanceChart(data.performance);
+        }
+
+        // 6. 최근 활동 목록 업데이트
+        const activityListEl = document.getElementById("recent-activity-list");
+        if (activityListEl && data.activities) {
+          activityListEl.innerHTML = data.activities.map(act => `
+            <div class="list-row">
+              <div class="activity-icon ${act.iconClass}"><span class="icon ${act.iconSymbol}"></span></div>
+              <div class="row-main">
+                <div class="row-title">${act.title}</div>
+              </div>
+              <span class="activity-time">${act.time}</span>
+            </div>
+          `).join("");
+        }
+
+        // 7. 위험 학생 리스트 동적 업데이트
+        const riskListEl = document.getElementById("at-risk-student-list");
+        if (riskListEl && data.atRiskStudents) {
+          riskListEl.innerHTML = "";
+          if (data.atRiskStudents.length === 0) {
+            riskListEl.innerHTML = `
+              <div class="list-row">
+                <div class="row-main">
+                  <div class="row-title" style="color: var(--text-500);">출석 위험 학생이 없습니다.</div>
+                </div>
+              </div>
+            `;
+          } else {
+            data.atRiskStudents.forEach(student => {
+              const row = document.createElement("div");
+              row.className = "list-row";
+              const avatar = student.gender === "여" ? "/images/default_avatar_woman.png" : "/images/default_avatar_man.png";
+              row.innerHTML = `
+                <span class="row-avatar"><img src="${avatar}" alt="" /></span>
+                <div class="row-main">
+                  <div class="row-title">${student.name}</div>
+                  <div class="row-sub">${student.className} · 출석률 ${student.attendanceRate}%</div>
+                </div>
+                  <span class="badge ${student.riskBadgeClass}">${student.riskLevel}</span>
+              `;
+              riskListEl.appendChild(row);
+            });
+          }
+        }
+
+        // 8. 오늘 상담 일정 동적 업데이트
+        const counselingListEl = document.getElementById("today-counseling-list");
+        if (counselingListEl && data.todayCounselings) {
+          counselingListEl.innerHTML = "";
+          if (data.todayCounselings.length === 0) {
+            counselingListEl.innerHTML = `
+              <div class="list-row">
+                <div class="row-main">
+                  <div class="row-title" style="color: var(--text-500);">오늘 예정된 상담 일정이 없습니다.</div>
+                </div>
+              </div>
+            `;
+          } else {
+            data.todayCounselings.forEach(c => {
+              const row = document.createElement("div");
+              row.className = "list-row";
+              row.innerHTML = `
+                <div class="time-col">${c.time}</div>
+                <span class="cnsl-track"><span class="cnsl-dot"></span></span>
+                <div class="row-main">
+                  <div class="row-title">${c.name}</div>
+                  <div class="row-sub">${c.className} · ${c.counselor} 상담사</div>
+                </div>
+                <span class="badge ${c.badgeClass}">${c.type}</span>
+              `;
+              counselingListEl.appendChild(row);
+            });
+          }
+        }
+
+        // 9. 후속 연락 대상 동적 업데이트
+        const followUpListEl = document.getElementById("follow-up-list");
+        if (followUpListEl && data.followUpContacts) {
+          followUpListEl.innerHTML = "";
+          if (data.followUpContacts.length === 0) {
+            followUpListEl.innerHTML = `
+              <div class="list-row">
+                <div class="row-main">
+                  <div class="row-title" style="color: var(--text-500);">후속 연락 대상 학생이 없습니다.</div>
+                </div>
+              </div>
+            `;
+          } else {
+            data.followUpContacts.forEach(f => {
+              const row = document.createElement("div");
+              row.className = "list-row";
+              const avatar = f.gender === "여" ? "/images/default_avatar_woman.png" : "/images/default_avatar_man.png";
+              row.innerHTML = `
+                <span class="row-avatar"><img src="${avatar}" alt="" /></span>
+                <div class="row-main">
+                  <div class="row-title">${f.name}</div>
+                  <div class="row-sub">${f.className}</div>
+                </div>
+                <span class="badge badge-gray">${f.due}</span>
+              `;
+              followUpListEl.appendChild(row);
+            });
+          }
+        }
+      })
+      .catch(err => {
+        console.error("대시보드 데이터 로드 실패:", err);
+      });
+  }
+
+  function renderPerformanceChart(perfData) {
+    const lineGroup = document.getElementById("performance-chart-lines-group");
+    const xLabelsContainer = document.getElementById("performance-x-labels");
+    if (!lineGroup || !xLabelsContainer) return;
+
+    const xs = [36, 94, 152, 210, 268];
+    const getY = (val) => 200 - (val / 100) * 180;
+
+    xLabelsContainer.innerHTML = perfData.map(d => `<span>${d.month}</span>`).join("");
+
+    const completionPoints = perfData.map((d, i) => `${xs[i]},${getY(d.completion)}`).join(" ");
+    const employmentPoints = perfData.map((d, i) => `${xs[i]},${getY(d.employment)}`).join(" ");
+
+    const lastIdx = perfData.length - 1;
+    const lastCompletionVal = perfData[lastIdx].completion;
+    const lastEmploymentVal = perfData[lastIdx].employment;
+    const lastCompletionY = getY(lastCompletionVal);
+    const lastEmploymentY = getY(lastEmploymentVal);
+
+    let html = "";
+    
+    html += `<polyline points="${completionPoints}" fill="none" stroke="#2f6fed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+    html += `<g fill="#2f6fed">`;
+    perfData.forEach((d, i) => {
+      html += `<circle cx="${xs[i]}" cy="${getY(d.completion)}" r="3.5" />`;
+    });
+    html += `</g>`;
+
+    html += `<polyline points="${employmentPoints}" fill="none" stroke="#12b76a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+    html += `<g fill="#12b76a">`;
+    perfData.forEach((d, i) => {
+      html += `<circle cx="${xs[i]}" cy="${getY(d.employment)}" r="3.5" />`;
+    });
+    html += `</g>`;
+
+    html += `
+      <rect x="272" y="${lastCompletionY - 9}" width="46" height="19" rx="9.5" fill="#2f6fed" />
+      <text x="295" y="${lastCompletionY + 4}" text-anchor="middle" style="font-size:10.5px;fill:#fff;font-weight:700">${lastCompletionVal}%</text>
+      <rect x="272" y="${lastEmploymentY - 9}" width="46" height="19" rx="9.5" fill="#12b76a" />
+      <text x="295" y="${lastEmploymentY + 4}" text-anchor="middle" style="font-size:10.5px;fill:#fff;font-weight:700">${lastEmploymentVal}%</text>
+    `;
+
+    lineGroup.innerHTML = html;
+  }
+
+  function getTaskTargetUrl(taskText) {
+    if (/리드/.test(taskText)) return "/pages/leads.html";
+    if (/취업/.test(taskText)) return "/pages/employment.html";
+    if (/출석|결석|출결/.test(taskText)) return "/pages/attendance.html";
+    if (/과정|기수|수업/.test(taskText)) return "/pages/courses.html";
+    if (/CS|문의|질문|답변/.test(taskText)) return "/pages/cs.html";
+    if (/통계|분석|보고서/.test(taskText)) return "/pages/stats.html";
+    if (/설정|환경|시스템/.test(taskText)) return "/pages/settings.html";
+    return "/pages/students.html";
+  }
+</script>
+<style>
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-gray { background: var(--gray-bg); color: var(--text-500); }
+</style>
+</body>
+</html>

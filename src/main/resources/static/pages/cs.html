@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAON EDU | 상담 관리</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="/css/common.css" />
+<style>
+  .lead-item-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .lead-item-card:hover {
+    border-color: var(--blue) !important;
+    background-color: var(--page-bg) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(47, 111, 237, 0.06);
+  }
+  .lead-item-card.active {
+    border-color: var(--blue) !important;
+    background-color: var(--blue-bg) !important;
+    box-shadow: 0 4px 12px rgba(47, 111, 237, 0.1);
+  }
+  #leadListContainer::-webkit-scrollbar {
+    width: 6px;
+  }
+  #leadListContainer::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #leadListContainer::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 3px;
+  }
+  #leadListContainer::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-400);
+  }
+  .form-select:focus, input:focus, textarea:focus {
+    border-color: var(--blue) !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15) !important;
+  }
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+  /* Search input layout enhancement */
+  #leadSearchInput {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  #leadSearchInput:focus {
+    border-color: var(--blue);
+  }
+  
+  /* 미니 탭 스타일 추가 */
+  .mini-tab {
+    background: var(--gray-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-700);
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+  }
+  .mini-tab:hover {
+    background: var(--border);
+    color: var(--text-900);
+  }
+  .mini-tab.active {
+    background: var(--blue) !important;
+    border-color: var(--blue-dark) !important;
+    color: white !important;
+  }
+
+  /* AI 상담 전략 제안 카드 */
+  .ai-strategy-card {
+    border: 1px dashed #93c5fd;
+    background-color: #eff6ff;
+  }
+  .ai-strategy-title { color: #2563eb; }
+  .ai-strategy-text { color: #1e40af; }
+  :root[data-theme="dark"] .ai-strategy-card {
+    border-color: var(--border);
+    background-color: var(--blue-bg);
+  }
+  :root[data-theme="dark"] .ai-strategy-title { color: var(--blue); }
+  :root[data-theme="dark"] .ai-strategy-text { color: var(--text-500); }
+</style>
+</head>
+<body data-page="cs">
+<div class="app">
+  <div data-include="/partials/sidebar.html"></div>
+  <div class="main">
+    <div data-include="/partials/topbar.html"></div>
+    <main class="content">
+      
+      <!-- 페이지 헤더 -->
+      <section class="page-head">
+        <div>
+          <h1>상담 관리</h1>
+          <p>등록 대기 중인 리드의 상담 이력을 확인하고, 새로운 상담 일지를 편리하게 기록하세요.</p>
+        </div>
+      </section>
+
+      <!-- 2분할 레이아웃 -->
+      <section class="panel-row" style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 24px; align-items: stretch;">
+        
+        <!-- 왼쪽: 리드 선택 카드 -->
+        <div class="card panel" style="padding: 24px; min-height: 520px; display: flex; flex-direction: column;">
+          <div class="panel-head" style="margin-bottom: 16px;">
+            <div class="panel-title">리드 목록 (<span id="leadCount">0</span>)</div>
+          </div>
+          <!-- 미니 상태 필터 탭 -->
+          <div class="mini-tabs-container" style="margin-bottom: 16px; overflow-x: auto; white-space: nowrap; -ms-overflow-style: none; scrollbar-width: none;">
+            <div style="display: flex; gap: 6px; padding-bottom: 4px;" id="miniTabs">
+              <button type="button" class="mini-tab active" data-status="전체">전체</button>
+              <button type="button" class="mini-tab" data-status="신규">신규</button>
+              <button type="button" class="mini-tab" data-status="상담예정">예정</button>
+              <button type="button" class="mini-tab" data-status="상담진행">진행</button>
+              <button type="button" class="mini-tab" data-status="등록완료">완료</button>
+              <button type="button" class="mini-tab" data-status="이탈">이탈</button>
+            </div>
+          </div>
+
+          <!-- 검색 및 담당자 필터 -->
+          <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; margin-bottom: 16px;">
+            <input type="text" id="leadSearchInput" placeholder="이름 또는 연락처 검색" />
+            <select id="leadManagerFilter" class="form-select" style="padding: 10px 12px; font-size: 13px; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-weight: 500; color: var(--text-700);">
+              <option value="전체">담당자 전체</option>
+            </select>
+          </div>
+          <!-- 리드 목록 영역 -->
+          <div id="leadListContainer" style="max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+            <!-- 리드 아이템들이 JS로 채워짐 -->
+          </div>
+        </div>
+
+        <!-- 오른쪽: 상담 기록 및 상세 카드 -->
+        <div class="card panel" id="counselingDetailPanel" style="padding: 24px; min-height: 520px; display: none;">
+          <!-- 프로필 요약 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background-color: var(--gray-bg, #f3f4f6); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <img id="counselingAvatar" src="/images/default_avatar_man.png" style="width: 135%; height: 135%; object-fit: cover;" alt="" />
+              </div>
+              <div>
+                <h2 id="counselingName" style="font-size: 18px; font-weight: 700; color: var(--text-900); margin: 0 0 4px 0;">김서연</h2>
+                <div id="counselingCourse" style="font-size: 13px; color: var(--text-500);">웹 개발자 과정 문의</div>
+              </div>
+            </div>
+            <!-- 상태 조절 셀렉트박스 -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <select id="counselingStatusSelect" class="form-select" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background-color: var(--surface);">
+                <option value="신규">신규</option>
+                <option value="상담예정">상담예정</option>
+                <option value="상담진행">상담진행</option>
+                <option value="등록완료">등록완료</option>
+                <option value="이탈">이탈</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 리드 메타 정보 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-bottom: 24px; background-color: var(--page-bg); padding: 16px; border-radius: 8px; font-size: 13px; border: 1px solid var(--border);">
+            <div><span style="color: var(--text-500); margin-right: 8px;">연락처</span> <span id="counselingPhone" style="font-weight: 600;">010-1234-5678</span></div>
+            <div><span style="color: var(--text-500); margin-right: 8px;">유입 경로</span> <span id="counselingSource" style="font-weight: 600;">인스타 광고</span></div>
+            <div><span style="color: var(--text-500); margin-right: 8px;">담당 상담사</span> <span id="counselingManager" style="font-weight: 600;">김상담</span></div>
+            <div><span style="color: var(--text-500); margin-right: 8px;">최근 연락일</span> <span id="counselingLastContact" style="font-weight: 600;">2026.07.22</span></div>
+          </div>
+
+          <!-- AI 상담 전략 제안 카드 -->
+          <div class="ai-strategy-card" style="margin-bottom: 24px; padding: 14px 16px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span class="ai-strategy-title" style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <span class="icon i-star-fill" style="width: 14px; height: 14px;"></span> AI 상담 전략 제안
+              </span>
+              <button id="aiStrategyBtn" type="button" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px; border-radius: 12px; cursor: pointer; border: none; font-weight: 600; background-color: var(--blue); color: #fff;">
+                분석 실행
+              </button>
+            </div>
+            <div id="aiStrategyResult" class="ai-strategy-text" style="font-size: 12.5px; line-height: 1.5; min-height: 20px;">
+              [분석 실행] 버튼을 누르면 이 리드의 유입 경로 및 관심 과정 데이터를 기반으로 최적의 상담 멘트와 등록 유도 전략을 추천합니다.
+            </div>
+            <!-- 답변 템플릿 적용 버튼 -->
+            <button id="aiApplyTemplateBtn" type="button" class="btn-secondary" style="display: none; width: 100%; padding: 6px; font-size: 11px; border-radius: 6px; margin-top: 10px; font-weight: 600; cursor: pointer;">
+              추천 템플릿 복사하여 새 상담 입력 폼에 대입하기
+            </button>
+          </div>
+
+          <!-- 타임라인 -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-900);">상담 히스토리</h3>
+            <div id="timelineContainer" style="display: flex; flex-direction: column; gap: 16px; position: relative; padding-left: 20px; border-left: 2px solid var(--border); margin-left: 8px;">
+              <!-- 타임라인 항목들이 동적으로 추가됨 -->
+            </div>
+          </div>
+
+          <!-- 새 상담 등록 -->
+          <div style="border-top: 1px solid var(--border); padding-top: 20px; margin-top: 12px;">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-900);">새 상담 기록 등록</h3>
+            <form id="newCounselingForm">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-700); margin-bottom: 6px;">상담 방식</label>
+                  <select id="newCounselingType" class="form-select" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background-color: var(--surface);">
+                    <option value="전화">전화 상담</option>
+                    <option value="대면">대면 상담</option>
+                    <option value="카톡">카카오톡 문의</option>
+                    <option value="이메일">이메일 문의</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-700); margin-bottom: 6px;">상담 결과 요약</label>
+                  <input type="text" id="newCounselingSummary" placeholder="예: 국비지원 수강료 안내" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;" required />
+                </div>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-700); margin-bottom: 6px;">상담 상세 기록</label>
+                <textarea id="newCounselingMemo" placeholder="자세한 상담 내용 및 다음 예약 일정 등을 기록해주세요." style="width: 100%; height: 80px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; resize: none; font-family: inherit;" required></textarea>
+              </div>
+              <button type="submit" class="btn-primary" style="width: 100%; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer;">상담 일지 저장하기</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- 빈 상태 선택 안내 -->
+        <div class="card panel" id="emptyDetailPanel" style="padding: 64px 24px; min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-400);">
+          <img src="/images/illust_02.png" style="width: 180px; margin-bottom: 20px; opacity: 0.85;" alt="" />
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-700); margin-bottom: 8px;">상담할 리드를 선택해주세요</h3>
+          <p style="font-size: 13px; max-width: 280px; margin: 0; line-height: 1.5; color: var(--text-500);">왼쪽 목록에서 리드를 클릭하면 상세 프로필과 이전 상담 히스토리가 표시됩니다.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<!-- 토스트 알림창 -->
+<div id="toast" class="toast"></div>
+
+<script src="/js/include.js"></script>
+<script src="/js/task-banner.js"></script>
+<script src="/js/cs.js"></script>
+</body>
+</html>

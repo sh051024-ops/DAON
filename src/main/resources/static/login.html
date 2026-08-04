@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAON EDU | 로그인</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+<div class="login-page">
+
+  <div class="login-body">
+
+    <!-- 좌: 브랜드 + 일러스트 -->
+    <div class="login-left">
+      <div class="login-brand">
+        <div class="login-brand-mark"><img src="/images/daon_logo.png" alt="DAON EDU 로고" /></div>
+        <div class="login-brand-name">
+          <span class="b">DAON</span> <span class="l">EDU</span>
+          <span class="login-crm-badge">CRM</span>
+        </div>
+      </div>
+      <p class="login-tagline">상담부터 수료 · 취업까지<br />학원 운영 데이터를 한곳에서 관리하세요.</p>
+      <img class="login-illust" src="/images/daon_login_illust.png" alt="" />
+    </div>
+
+    <!-- 우: 로그인 카드 -->
+    <form class="login-card" id="loginForm" autocomplete="off" novalidate>
+      <h1>로그인</h1>
+
+      <div class="field">
+        <label class="field-label" for="loginId">아이디</label>
+        <div class="input-wrap">
+          <svg class="lead-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <input type="text" id="loginId" placeholder="아이디를 입력하세요" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="loginPw">비밀번호</label>
+        <div class="input-wrap">
+          <svg class="lead-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <input type="password" id="loginPw" placeholder="비밀번호를 입력하세요" />
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="비밀번호 표시">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="login-options">
+        <label class="keep-login">
+          <input type="checkbox" id="keepLogin" checked />
+          로그인 유지
+        </label>
+        <a class="forgot-link" href="#">비밀번호 찾기</a>
+      </div>
+
+      <button type="submit" class="login-submit">로그인</button>
+
+      <p class="login-error" id="loginError" hidden>아이디 또는 비밀번호가 올바르지 않습니다.</p>
+
+
+    </form>
+  </div>
+
+  <footer class="login-footer">
+    <div class="foot-left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></svg>
+      보안이 인증된 안전한 시스템입니다.
+    </div>
+    <div>로그인 관련 문의 : 02-123-4567 (평일 09:00 ~ 18:00)</div>
+    <div>© 2024 DAON EDU. All rights reserved.</div>
+  </footer>
+</div>
+
+<script src="/js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<header class="topbar">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" placeholder="검색 (학생, 리드, 과정, 전화번호)" />
+    <span class="kbd">⌘ K</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="date-picker">
+      <button class="pill-select" type="button" id="datePillBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="icon i-calendar"></span>
+        <span id="datePillLabel">2024.05.21 (화)</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+
+      <div class="date-dropdown" id="dateDropdown" hidden>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" type="button" id="calPrev" aria-label="이전">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="cal-title" type="button" id="calTitle">2024년 5월</button>
+          <button class="cal-nav-btn" type="button" id="calNext" aria-label="다음">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+
+        <!-- 일자 보기: 요일 헤더는 고정, 날짜 버튼은 JS가 채운다 -->
+        <div class="cal-day-view" id="calDayView">
+          <div class="cal-grid" id="calGrid">
+            <span class="cal-dow cal-sun">일</span>
+            <span class="cal-dow">월</span>
+            <span class="cal-dow">화</span>
+            <span class="cal-dow">수</span>
+            <span class="cal-dow">목</span>
+            <span class="cal-dow">금</span>
+            <span class="cal-dow cal-sat">토</span>
+          </div>
+        </div>
+
+        <!-- 월 선택 보기: 제목 클릭 시 노출, JS가 채운다 -->
+        <div class="cal-month-view" id="calMonthView" hidden>
+          <div class="cal-months" id="calMonths"></div>
+        </div>
+
+        <div class="cal-quick">
+          <button class="cal-quick-btn" type="button" data-quick="today">오늘</button>
+          <button class="cal-quick-btn" type="button" data-quick="yesterday">어제</button>
+          <button class="cal-quick-btn" type="button" data-quick="week">이번 주</button>
+          <button class="cal-quick-btn" type="button" data-quick="month">이번 달</button>
+        </div>
+
+        <button class="cal-range" type="button" id="calRangeToggle">
+          <span class="icon i-calendar"></span>
+          날짜 범위 선택
+        </button>
+      </div>
+    </div>
+    <div class="profile-menu">
+      <button class="profile" type="button" id="profileBtn" aria-haspopup="true" aria-expanded="false">
+        <img class="avatar" id="profileAvatar" src="/images/Daon_Kim.png" alt="" />
+        <div class="profile-name">김다온 원장</div>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:12px;height:12px;color:var(--text-400)"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+
+      <div class="profile-dropdown" id="profileDropdown" hidden>
+        <button class="profile-item profile-item-danger" type="button" id="menuLogout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          로그아웃
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

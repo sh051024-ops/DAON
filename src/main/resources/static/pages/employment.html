@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAON EDU | 취업 관리</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="/css/common.css" />
+<style>
+  /* 취업 관리 전용 모던 스타일 */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 110px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 24, 40, 0.06);
+  }
+  .kpi-card .kpi-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-500);
+    margin-bottom: 8px;
+  }
+  .kpi-card .kpi-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-900);
+  }
+  .kpi-card .kpi-sub {
+    font-size: 11.5px;
+    color: var(--text-400);
+    margin-top: 6px;
+  }
+  
+  /* 테이블 커스텀 스타일 */
+  .employment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .employment-table th {
+    background-color: var(--page-bg);
+    color: var(--text-700);
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .employment-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-700);
+  }
+  .employment-table tr {
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .employment-table tr:hover {
+    background-color: var(--page-bg);
+  }
+  .employment-table tr.active {
+    background-color: var(--blue-bg) !important;
+  }
+
+  /* 막대 차트 (CSS Progress) */
+  .chart-item {
+    margin-bottom: 14px;
+  }
+  .chart-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-700);
+    margin-bottom: 6px;
+  }
+  .chart-bar-bg {
+    width: 100%;
+    height: 8px;
+    background-color: var(--page-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .chart-bar-fill {
+    height: 100%;
+    background-color: var(--blue);
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* 페이지네이션 버튼 */
+  .page-btn {
+    width: auto !important;
+    height: auto !important;
+    min-width: 30px;
+    min-height: 30px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--text-700);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    outline: none;
+  }
+  .page-btn:hover:not(:disabled) {
+    background-color: var(--page-bg);
+    border-color: var(--text-400);
+  }
+  .page-btn.active {
+    background-color: var(--blue) !important;
+    border-color: var(--blue-dark) !important;
+    color: #fff !important;
+  }
+  .page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* AI 매칭 카드 및 스피너 */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .ai-rec-card {
+    background-color: var(--page-bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    transition: all 0.2s;
+  }
+  .ai-rec-card:hover {
+    border-style: solid;
+    border-color: var(--blue);
+    background-color: var(--surface);
+    box-shadow: 0 4px 10px rgba(47, 111, 237, 0.05);
+  }
+
+  /* 토스트 메시지 */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background-color: #101828;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body data-page="employment">
+<div class="app">
+  <div data-include="/partials/sidebar.html"></div>
+  <div class="main">
+    <div data-include="/partials/topbar.html"></div>
+    <main class="content">
+      
+      <!-- 페이지 헤더 -->
+      <section class="page-head">
+        <div>
+          <h1>취업 관리</h1>
+          <p>수료생들의 취업 현황을 실시간으로 추적하고 사후 관리 및 취업처 연계를 관리합니다.</p>
+        </div>
+      </section>
+
+      <!-- 상단 KPI 지표 -->
+      <section class="kpi-row">
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title">전체 취업률</div>
+            <div class="kpi-val"><span id="kpiRate">0.0</span>%</div>
+          </div>
+          <div class="kpi-sub">수료생 대비 취업완료율</div>
+        </div>
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title">취업 성공</div>
+            <div class="kpi-val"><span id="kpiEmployed">0</span>명</div>
+          </div>
+          <div class="kpi-sub">전체 수료생 중 직장 유치 성공</div>
+        </div>
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title">적극 구직자</div>
+            <div class="kpi-val"><span id="kpiSeekers">0</span>명</div>
+          </div>
+          <div class="kpi-sub">집중 취업 연계 필요 대상</div>
+        </div>
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title">사후 관리 대상</div>
+            <div class="kpi-val"><span id="kpiTracking">0</span>명</div>
+          </div>
+          <div class="kpi-sub">수료 후 사후 케어 진행 중</div>
+        </div>
+      </section>
+
+      <!-- 메인 테이블 & 어시스턴트 카드 분할 -->
+      <section style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start;">
+        
+        <!-- 왼쪽: 수료생 목록 카드 -->
+        <div class="card panel" style="padding: 24px; min-height: 580px; display: flex; flex-direction: column;">
+          <div class="panel-head" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="panel-title">수료생 현황판 (<span id="gradCount">0</span>)</div>
+          </div>
+          
+          <!-- 검색 및 필터 컨트롤 -->
+          <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <input type="text" id="gradSearchInput" placeholder="이름으로 검색..." class="form-input" style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px;" />
+            <select id="gradStatusFilter" class="form-select" style="padding: 10px 12px; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+              <option value="전체">취업상태 전체</option>
+              <option value="취업완료">취업완료</option>
+              <option value="재직중">재직중</option>
+              <option value="구직중">구직중</option>
+              <option value="미정">미정</option>
+            </select>
+            <select id="gradClassFilter" class="form-select" style="padding: 10px 12px; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+              <option value="전체">수료과정 전체</option>
+            </select>
+          </div>
+
+          <!-- 테이블 컨테이너 -->
+          <div style="flex-grow: 1; overflow-x: auto;">
+            <table class="employment-table">
+              <thead>
+                <tr>
+                  <th>이름</th>
+                  <th>수료과정</th>
+                  <th>수료일</th>
+                  <th>취업상태</th>
+                  <th>취업처</th>
+                  <th>사후관리기한</th>
+                </tr>
+              </thead>
+              <tbody id="gradTableBody">
+                <!-- JS 동적 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+          <!-- 페이지네이션 컨트롤 -->
+          <div id="paginationContainer" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);">
+            <!-- JS 동적 렌더링 -->
+          </div>
+        </div>
+
+        <!-- 오른쪽: 매칭 어시스턴트 & 차트 영역 -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- 취업 연계 매칭 어시스턴트 -->
+          <div class="card panel" id="matchingPanel" style="padding: 24px; min-height: 330px;">
+            <div class="panel-head" style="margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div class="panel-title" style="font-size: 16px; color: var(--text-900);">취업 매칭 어시스턴트</div>
+              <button type="button" id="aiMatchBtn" class="btn-primary" style="padding: 6px 12px; font-size: 12px; border-radius: 20px; display: flex; align-items: center; gap: 4px; cursor: pointer; background: var(--blue); font-weight: 600; border: none; display: none;">
+                <span class="icon i-star-fill" style="width: 13px; height: 13px; background-color: #fff;"></span> AI 추천 매칭
+              </button>
+            </div>
+            
+            <!-- 선택 안내 문구 -->
+            <div id="matchingEmpty" style="text-align: center; color: var(--text-400); padding: 48px 0; font-size: 13px;">
+              목록에서 수료생을 클릭하면 상세 취업 연계 화면이 활성화됩니다.
+            </div>
+            
+            <!-- 실제 등록/수정 폼 -->
+            <form id="matchingForm" style="display: none;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background-color: var(--gray-bg, #f3f4f6); flex-shrink: 0; display: flex; align-items: center; justify-content: center;" id="matchAvatar"><img src="/images/default_avatar_man.png" alt="" style="width: 135%; height: 135%; object-fit: cover;" /></div>
+                <div>
+                  <h3 id="matchName" style="font-size: 15px; font-weight: 700; color: var(--text-900); margin: 0 0 2px 0;">이수민</h3>
+                  <div id="matchClass" style="font-size: 12px; color: var(--text-500);">IT-1반 수료</div>
+                </div>
+              </div>
+              
+              <input type="hidden" id="matchId" />
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <div>
+                  <label style="display: block; font-size: 11.5px; font-weight: 600; color: var(--text-500); margin-bottom: 4px;">취업 상태</label>
+                  <select id="matchStatusSelect" class="form-select" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background-color: var(--surface); font-size: 12.5px;">
+                    <option value="미정">미정</option>
+                    <option value="구직중">구직중</option>
+                    <option value="취업완료">취업완료</option>
+                    <option value="재직중">재직중</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 11.5px; font-weight: 600; color: var(--text-500); margin-bottom: 4px;">취업처 (기업명)</label>
+                  <input type="text" id="matchCompanyInput" placeholder="회사명 입력" class="form-input" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px;" />
+                </div>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+                <div>
+                  <label style="display: block; font-size: 11.5px; font-weight: 600; color: var(--text-500); margin-bottom: 4px;">취업 일자</label>
+                  <input type="text" id="matchEmployedAtInput" placeholder="YYYY.MM.DD" class="form-input" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px;" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 11.5px; font-weight: 600; color: var(--text-500); margin-bottom: 4px;">사후 관리 만료일</label>
+                  <input type="text" id="matchTrackUntilInput" placeholder="YYYY.MM.DD" class="form-input" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px;" />
+                </div>
+              </div>
+              
+              <button type="submit" class="btn-primary" style="width: 100%; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13.5px;">매칭 상태 저장하기</button>
+            </form>
+
+            <!-- AI 기업 매칭 추천 영역 -->
+            <div id="aiMatchingResultArea" style="display: none; border-top: 1px solid var(--border); margin-top: 20px; padding-top: 16px;">
+              <h4 style="font-size: 13.5px; font-weight: 700; color: var(--text-800); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; margin-top: 0;">
+                <span style="display: flex; align-items: center; gap: 6px;"><span class="icon i-star-fill" style="width: 13px; height: 13px;"></span> AI 추천 취업 매칭</span>
+                <span style="font-size: 10.5px; font-weight: 600; color: var(--blue); background-color: var(--blue-bg); padding: 2px 6px; border-radius: 12px; border: 1px solid rgba(47,111,237,0.15);">GPT-4o</span>
+              </h4>
+              
+              <!-- 로더 -->
+              <div id="aiMatchLoader" style="display: none; text-align: center; padding: 24px 0;">
+                <div style="display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 8px;"></div>
+                <div style="font-size: 12.5px; color: var(--text-500);">수료생 이력서 및 상담일지 분석 중...</div>
+              </div>
+              
+              <!-- 추천 카드 리스트 -->
+              <div id="aiMatchCards" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- 동적 추천 카드들이 삽입됨 -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 과정별 취업 현황 (차트 영역) -->
+          <div class="card panel" style="padding: 24px; min-height: 220px;">
+            <div class="panel-head" style="margin-bottom: 18px;">
+              <div class="panel-title" style="font-size: 15px; color: var(--text-900);">과정별 취업률 비교</div>
+            </div>
+            
+            <div id="chartContainer" style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- JS 동적 렌더링 -->
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script src="/js/include.js"></script>
+<script src="/js/task-banner.js"></script>
+<script src="/js/employment.js"></script>
+</body>
+</html>

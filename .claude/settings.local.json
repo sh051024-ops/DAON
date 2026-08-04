@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat -ano)",
+      "Bash(xargs ls -la)",
+      "PowerShell(java *)"
+    ]
+  }
+}

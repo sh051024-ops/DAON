@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAON EDU | 학생 관리</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="/css/common.css" />
+<style>
+  :root { --blue:#2563eb; --blue-50:#eff6ff; }
+  
+  /* ───── 페이지 전용 스타일 ───── */
+  .page-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+  .page-head h1 { font-size:22px; font-weight:800; letter-spacing:-.4px; margin:0; }
+  .page-head p { font-size:13px; color:var(--text-500); margin-top:5px; }
+  .head-btns { display:flex; gap:8px; }
+  .btn { padding:9px 15px; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer;
+         border:1px solid var(--border); background:var(--surface); color:var(--text-700); display:flex; align-items:center; gap:6px; }
+  .btn.primary { background:var(--blue); color:#fff; border:none; }
+  svg.ic { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+
+  /* ───── 요약 카드 ───── */
+  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px; }
+  .card { background:var(--surface); border-radius:15px; padding:17px 18px; display:flex; align-items:center; gap:13px; border:1px solid var(--border); }
+  .card .ico { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .card .ico .icon { width:22px; height:22px; }
+  .card .t { font-size:12px; color:var(--text-500); font-weight:600; }
+  .card .v { font-size:21px; font-weight:800; margin-top:3px; letter-spacing:-.4px; }
+  .card .v small { font-size:12px; font-weight:600; color:var(--text-900); }
+  .card .d { font-size:11px; color:var(--text-400); margin-top:3px; }
+  .card .d .up { color:#16a34a; font-weight:700; } .card .d .dn { color:#dc2626; font-weight:700; }
+
+  .layout { display:grid; grid-template-columns:1fr 272px; gap:16px; align-items:start; }
+
+  /* ───── 필터 + 테이블 ───── */
+  .panel { background:var(--surface); border-radius:15px; border:1px solid var(--border); overflow:hidden; }
+  .filters { display:flex; gap:9px; padding:13px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; align-items:center; }
+  .filters select, .filters .f-search input { padding:8px 11px; border:1px solid var(--border); border-radius:8px; font-size:12.5px; background:var(--surface); color:var(--text-700); }
+  .filters select, .tfoot select, .form-group select {
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    padding-right:30px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a2b3' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 8px center; background-size:13px;
+  }
+  :root[data-theme="dark"] .filters select, :root[data-theme="dark"] .tfoot select, :root[data-theme="dark"] .form-group select {
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d7382' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
+  .filters #fCategory, .filters #fClass, .filters #fStatus { width:140px; }
+  .f-search { position:relative; width:200px; color:var(--text-400); }
+  .f-search svg { position:absolute; right:10px; top:8px; width:15px; height:15px; }
+  .f-search input { width:100%; }
+  .btn.sm { padding:8px 12px; font-size:12.5px; }
+  .btn.reset { color:var(--blue); border-color:#bfdbfe; margin-left:auto; }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th { text-align:left; padding:11px 13px; color:var(--text-400); font-size:11.5px; font-weight:600;
+             border-bottom:1px solid var(--border); white-space:nowrap; background:var(--page-bg); }
+  tbody td { padding:11px 13px; border-bottom:1px solid var(--border); white-space:nowrap; vertical-align:middle; }
+  tbody tr:hover { background:var(--page-bg); }
+  input[type=checkbox] { accent-color:var(--blue); width:15px; height:15px; }
+  .stu { display:flex; align-items:center; gap:10px; }
+  .avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+            color:#fff; font-weight:700; font-size:13px; flex-shrink:0; overflow:hidden; background:var(--gray-bg, #f3f4f6); }
+  .avatar img { width:135%; height:135%; object-fit:cover; }
+  .stu .nm { font-weight:700; font-size:13px; }
+  .two-line .l1 { font-weight:600; } .two-line .l2 { font-size:11px; color:var(--text-400); margin-top:2px; }
+  .rate { min-width:110px; }
+  .rate .pct { font-size:12.5px; font-weight:700; margin-bottom:4px; }
+  .bar { height:5px; background:var(--gray-bg); border-radius:4px; overflow:hidden; }
+  .bar i { display:block; height:100%; border-radius:4px; background:var(--blue); }
+  .bar i.warn { background:#f59e0b; } .bar i.danger { background:#ef4444; }
+  .chip { padding:4px 11px; border-radius:20px; font-size:11.5px; font-weight:700; }
+  .chip.s-ok   { background:#eff6ff; color:#2563eb; }
+  .chip.s-care { background:#fff7ed; color:#ea580c; }
+  .chip.s-warn { background:#fefce8; color:#ca8a04; }
+  .chip.s-risk { background:#fef2f2; color:#dc2626; }
+  .chip.s-done { background:#f0fdf4; color:#16a34a; }
+  :root[data-theme="dark"] .chip.s-ok   { background:var(--blue-bg); color:var(--blue); }
+  :root[data-theme="dark"] .chip.s-care { background:var(--amber-bg); color:var(--amber); }
+  :root[data-theme="dark"] .chip.s-warn { background:var(--amber-bg); color:var(--amber); }
+  :root[data-theme="dark"] .chip.s-risk { background:var(--red-bg); color:var(--red); }
+  :root[data-theme="dark"] .chip.s-done { background:var(--green-bg); color:var(--green); }
+  .dots { color:var(--text-400); cursor:pointer; font-weight:700; letter-spacing:1px; }
+
+  .tfoot { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; font-size:12px; color:var(--text-500); }
+  .tfoot .lf { display:flex; align-items:center; gap:8px; }
+  .tfoot select { padding:6px 9px; border:1px solid var(--border); border-radius:7px; font-size:12px; color:var(--text-700); background:var(--surface); }
+  .pages { display:flex; gap:4px; align-items:center; }
+  .pages button { min-width:28px; padding:6px 8px; border:1px solid var(--border); background:var(--surface); border-radius:7px; cursor:pointer; font-size:12px; color:var(--text-700); }
+  .pages button.cur { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+  /* ───── 우측 패널 ───── */
+  .side-card { background:var(--surface); border-radius:15px; border:1px solid var(--border); padding:16px; margin-bottom:14px; }
+  .side-card h3 { font-size:14px; font-weight:700; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; margin-top:0; }
+  .side-card h3 a { font-size:11px; color:var(--text-400); text-decoration:none; font-weight:500; }
+  .risk-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .risk-item:last-child { border-bottom:none; }
+  .rank { width:20px; height:20px; border-radius:6px; background:#fef2f2; color:#dc2626; font-size:11px; font-weight:800;
+          display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  :root[data-theme="dark"] .rank { background:var(--red-bg); color:var(--red); }
+  .risk-item .info { flex:1; min-width:0; }
+  .risk-item .nm { font-size:13px; font-weight:700; } .risk-item .cls { font-size:11px; color:var(--text-400); margin-top:1px; }
+  .risk-item .rt { font-size:11.5px; font-weight:700; color:#dc2626; white-space:nowrap; }
+  .quick a { display:flex; align-items:center; gap:11px; padding:10px 8px; border-radius:9px; text-decoration:none;
+             color:var(--text-700); font-size:13px; font-weight:600; }
+  .quick a:hover { background:var(--page-bg); }
+  .quick .qi { width:30px; height:30px; border-radius:8px; background:var(--blue-50); color:var(--blue);
+               display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quick .qi .icon { width:15px; height:15px; }
+  .notice-item { padding:11px 12px; background:var(--page-bg); border-radius:10px; font-size:12px; color:var(--text-500); line-height:1.55; }
+  .notice-item b { color:var(--text-900); display:block; margin-bottom:3px; }
+  .notice-item .meta { color:var(--text-400); font-size:11px; margin-top:5px; }
+
+  /* ───── Modal ───── */
+  .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.4); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:9999; }
+  .modal-overlay.active { display:flex; }
+  .modal-content { background:var(--surface); border-radius:16px; border:1px solid var(--border); width:480px; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); position:relative; }
+  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .modal-header h2 { font-size:16px; font-weight:800; margin:0; }
+  .modal-close { background:none; border:none; font-size:20px; font-weight:600; cursor:pointer; color:var(--text-400); }
+  .modal-close:hover { color:var(--text-900); }
+  .form-group { margin-bottom:14px; }
+  .form-group label { display:block; font-size:12px; font-weight:700; color:var(--text-700); margin-bottom:6px; }
+  .form-group input, .form-group select { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; color:var(--text-900); outline:none; background:var(--surface); box-sizing:border-box; }
+  .form-group input:focus, .form-group select:focus { border-color:var(--blue); }
+  .form-row { display:flex; gap:12px; }
+  .form-row .form-group { flex:1; }
+  .modal-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+</style>
+</head>
+<body data-page="students">
+<div class="app">
+  <div data-include="/partials/sidebar.html"></div>
+  <div class="main">
+    <div data-include="/partials/topbar.html"></div>
+    <main class="content">
+      
+      <div class="page-head">
+        <div>
+          <h1>학생 관리</h1>
+          <p>학생 정보를 관리하고 학습 현황을 한눈에 확인하세요.</p>
+        </div>
+        <div class="head-btns">
+          <button class="btn" id="btnExport"><svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>내보내기</button>
+          <button class="btn primary" id="btnRegister">＋ 학생 등록</button>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="ico" style="background:#eff6ff;color:#2563eb"><span class="icon i-people-fill"></span></div>
+          <div><div class="t">전체 학생</div><div class="v" id="cTotal">—</div><div class="d" id="dTotal">최근 30일 기준</div></div>
+        </div>
+        <div class="card">
+          <div class="ico" style="background:#f0fdf4;color:#16a34a"><span class="icon i-grad-fill"></span></div>
+          <div><div class="t">수강 중</div><div class="v" id="cEnrolled">—</div><div class="d" id="dEnrolled">—</div></div>
+        </div>
+        <div class="card">
+          <div class="ico" style="background:#fefce8;color:#ca8a04"><span class="icon i-calendar-fill"></span></div>
+          <div><div class="t">수료 예정 (30일 내)</div><div class="v" id="cExpected">—</div><div class="d" id="dExpected">—</div></div>
+        </div>
+        <div class="card">
+          <div class="ico" style="background:#fef2f2;color:#dc2626"><span class="icon i-warning-fill"></span></div>
+          <div><div class="t">위험 학생</div><div class="v" id="cRisk">—</div><div class="d" id="dRisk">—</div></div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="panel">
+          <div class="filters">
+            <select id="fCategory">
+              <option value="">과정 전체</option>
+              <option>IT</option><option>회계</option><option>기계</option><option>그래픽·멀티미디어</option>
+            </select>
+            <select id="fClass"><option value="">기수 전체</option></select>
+            <select id="fStatus">
+              <option value="">상태 전체</option>
+              <option>수강중</option><option>관심</option><option>주의</option><option>위험</option><option>수료</option>
+            </select>
+            <div class="f-search">
+              <input id="fQuery" placeholder="학생 이름, 연락처 검색">
+              <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </div>
+            <button class="btn sm" id="btnSearch">상세 필터 ⚙</button>
+            <button class="btn reset" id="btnReset"><svg class="ic" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>필터 초기화</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th><input type="checkbox"></th><th>이름</th><th>연락처</th><th>과정 / 기수</th>
+                <th>출석률</th><th>과제 제출률</th><th>상태</th><th>담당 강사</th><th>최근 상담</th><th></th>
+              </tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="tfoot">
+            <div class="lf"><input type="checkbox"> 전체 선택 <span id="pageInfo" style="margin-left:8px">—</span></div>
+            <div class="lf">
+              <select id="pageSize"><option value="10">10개씩 보기</option><option value="20" selected>20개씩 보기</option><option value="50">50개씩 보기</option></select>
+              <div class="pages" id="pages"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card">
+            <h3>위험 학생 TOP 5 <a href="#">전체 보기 ›</a></h3>
+            <div id="riskList"></div>
+          </div>
+          <div class="side-card quick">
+            <h3>빠른 작업</h3>
+            <a href="#" id="btnQuickRegister"><span class="qi"><span class="icon i-person"></span></span> 학생 등록 <span style="margin-left:auto;color:#cbd5e1">›</span></a>
+            <a href="#"><span class="qi"><span class="icon i-book"></span></span> <span>과정 배정<br><small style="font-weight:400;color:#94a3b8">학생에게 과정을 배정합니다.</small></span> <span style="margin-left:auto;color:#cbd5e1">›</span></a>
+            <a href="#"><span class="qi"><span class="icon i-report1"></span></span> <span>상담 기록<br><small style="font-weight:400;color:#94a3b8">상담 내용을 빠르게 기록해요.</small></span> <span style="margin-left:auto;color:#cbd5e1">›</span></a>
+            <a href="#"><span class="qi"><span class="icon i-bubble"></span></span> <span>문자 발송<br><small style="font-weight:400;color:#94a3b8">선택한 학생에게 문자를 보내요.</small></span> <span style="margin-left:auto;color:#cbd5e1">›</span></a>
+          </div>
+          <div class="side-card">
+            <h3>공지 / 메모 <a href="#">메모 작성 ＋</a></h3>
+            <div class="notice-item">
+              <b>📌 7월 과정 개강 안내</b>
+              8/2(일) 다음 기수 개강이 예정되어 있습니다. 학생들에게 안내 문자를 발송해주세요.
+              <div class="meta">김다운 원장 · 2026.07.10 09:30</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- 학생 등록 모달 -->
+<div class="modal-overlay" id="registerModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>＋ 신규 학생 등록</h2>
+      <button class="modal-close" id="btnRegisterClose">&times;</button>
+    </div>
+    <form id="registerForm">
+      <div class="form-group">
+        <label>이름 *</label>
+        <input type="text" id="regName" required placeholder="학생 이름을 입력하세요">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>나이 *</label>
+          <input type="number" id="regAge" required placeholder="예: 25">
+        </div>
+        <div class="form-group">
+          <label>성별 *</label>
+          <select id="regGender" required>
+            <option value="남">남성</option>
+            <option value="여">여성</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>연락처</label>
+          <input type="text" id="regPhone" placeholder="010-0000-0000">
+        </div>
+        <div class="form-group">
+          <label>이메일</label>
+          <input type="email" id="regEmail" placeholder="example@email.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>과정 *</label>
+          <select id="regCourseCategory" required>
+            <option>IT</option>
+            <option>회계</option>
+            <option>기계</option>
+            <option>그래픽·멀티미디어</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>반 이름 *</label>
+          <input type="text" id="regClassName" required placeholder="예: IT-1반">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>담당 강사</label>
+          <input type="text" id="regInstructor" placeholder="예: 한지우">
+        </div>
+        <div class="form-group">
+          <label>상담사</label>
+          <input type="text" id="regCounselor" placeholder="예: 김상담">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" id="btnRegisterCancel">취소</button>
+        <button type="submit" class="btn primary">등록 완료</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/include.js"></script>
+<script src="/js/task-banner.js"></script>
+<script>
+const CONSULT_TYPES = ["전화 상담","센터 상담","기록 상담","방문 상담"];
+let curPage = 0;
+
+function avatarSrc(gender){ return gender==="여" ? "/images/default_avatar_woman.png" : "/images/default_avatar_man.png"; }
+function chipClass(st){ return {"수강중":"s-ok","관심":"s-care","주의":"s-warn","위험":"s-risk","수료":"s-done"}[st]||"s-ok"; }
+function chipLabel(st){ return st==="수강중" ? "수강 중" : st; }
+function barClass(v){ return v==null?"":(v<60?"danger":(v<80?"warn":"")); }
+function fmtDate(d){ return d ? d.replaceAll("-",".") : "—"; }
+
+async function loadSummary(){
+  const s = await (await fetch("/api/students/summary")).json();
+  const pct = n => s.totalStudents ? (n*100/s.totalStudents).toFixed(1) : 0;
+  cTotal.innerHTML = s.totalStudents.toLocaleString()+"<small>명</small>";
+  dTotal.innerHTML = `<span class="up">▲ 12명</span> · 최근 30일 기준`;
+  cEnrolled.innerHTML = s.enrolled.toLocaleString()+"<small>명</small>";
+  dEnrolled.innerHTML = `<span class="up">▲ 8명</span> · 전체의 ${pct(s.enrolled)}%`;
+  cExpected.innerHTML = s.expectedToComplete.toLocaleString()+"<small>명</small>";
+  dExpected.innerHTML = `전체의 ${pct(s.expectedToComplete)}%`;
+  cRisk.innerHTML = s.atRisk.toLocaleString()+"<small>명</small>";
+  dRisk.innerHTML = `<span class="dn">▲ 3명</span> · 전체의 ${pct(s.atRisk)}%`;
+}
+
+async function loadClasses(){
+  const list = await (await fetch("/api/students/class-names")).json();
+  for(const c of list){ const o=document.createElement("option"); o.textContent=c; fClass.appendChild(o); }
+}
+
+async function loadRisk(){
+  const list = await (await fetch("/api/students/risk-top5")).json();
+  riskList.innerHTML = list.map((r,i)=>`
+    <div class="risk-item">
+      <div class="rank">${i+1}</div>
+      <div class="info"><div class="nm">${r.name}</div><div class="cls">${r.className}</div></div>
+      <div class="rt">출석 ${r.attendanceRate}%</div>
+    </div>`).join("");
+}
+
+async function loadStudents(page=0){
+  curPage = page;
+  const size = +pageSize.value;
+  const p = new URLSearchParams({page, size});
+  if(fCategory.value) p.set("category",fCategory.value);
+  if(fClass.value) p.set("className",fClass.value);
+  if(fStatus.value) p.set("status",fStatus.value);
+  const q = fQuery.value; if(q) p.set("q",q);
+  const data = await (await fetch("/api/students?"+p)).json();
+
+  tbody.innerHTML = data.content.map(s=>`
+    <tr>
+      <td><input type="checkbox"></td>
+      <td><div class="stu">
+        <div class="avatar"><img src="${avatarSrc(s.gender)}" alt="" /></div>
+        <div class="nm">${s.name}</div>
+      </div></td>
+      <td style="color:var(--text-700)">${s.phone||"—"}</td>
+      <td class="two-line"><div class="l1">${s.courseCategory}</div><div class="l2">${s.className}</div></td>
+      <td class="rate"><div class="pct">${s.attendanceRate??"—"}%</div><div class="bar"><i class="${barClass(s.attendanceRate)}" style="width:${s.attendanceRate||0}%"></i></div></td>
+      <td class="rate"><div class="pct">${s.assignmentRate??"—"}%</div><div class="bar"><i class="${barClass(s.assignmentRate)}" style="width:${s.assignmentRate||0}%"></i></div></td>
+      <td><span class="chip ${chipClass(s.displayStatus)}">${chipLabel(s.displayStatus)}</span></td>
+      <td style="color:var(--text-700)">${s.instructor||"—"}</td>
+      <td class="two-line"><div class="l1" style="font-weight:500">${fmtDate(s.lastConsultedAt)}</div><div class="l2">${CONSULT_TYPES[s.id%4]}</div></td>
+      <td><span class="dots">⋮</span></td>
+    </tr>`).join("");
+
+  const from = data.totalElements===0?0:data.page*data.size+1;
+  const to = Math.min((data.page+1)*data.size, data.totalElements);
+  pageInfo.textContent = `${from}-${to} / ${data.totalElements.toLocaleString()}명`;
+
+  let html = "";
+  const total = data.totalPages;
+  html += `<button ${data.page===0?"disabled":""} onclick="loadStudents(${data.page-1})">‹</button>`;
+  for(let i=0;i<total && i<7;i++)
+    html += `<button class="${i===data.page?'cur':''}" onclick="loadStudents(${i})">${i+1}</button>`;
+  html += `<button ${data.page>=total-1?"disabled":""} onclick="loadStudents(${data.page+1})">›</button>`;
+  pages.innerHTML = html;
+}
+
+btnSearch.onclick = ()=>loadStudents(0);
+[fCategory,fClass,fStatus].forEach(el=>el.onchange=()=>loadStudents(0));
+pageSize.onchange = ()=>loadStudents(0);
+fQuery.addEventListener("keydown",e=>{ if(e.key==="Enter") loadStudents(0); });
+
+btnReset.onclick = ()=>{
+  fCategory.value = "";
+  fClass.value = "";
+  fStatus.value = "";
+  fQuery.value = "";
+  loadStudents(0);
+};
+
+// ----- 내보내기 (Export) -----
+btnExport.onclick = () => {
+  const p = new URLSearchParams();
+  if(fCategory.value) p.set("category", fCategory.value);
+  if(fClass.value) p.set("className", fClass.value);
+  if(fStatus.value) p.set("status", fStatus.value);
+  if(fQuery.value) p.set("q", fQuery.value);
+  window.location.href = "/api/students/export?" + p.toString();
+};
+
+// ----- 학생 등록 모달 제어 -----
+const openModal = (e) => {
+  if(e) e.preventDefault();
+  registerForm.reset();
+  registerModal.classList.add("active");
+};
+const closeModal = () => registerModal.classList.remove("active");
+
+btnRegister.onclick = openModal;
+btnQuickRegister.onclick = openModal;
+btnRegisterClose.onclick = closeModal;
+btnRegisterCancel.onclick = closeModal;
+
+registerForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const req = {
+    name: regName.value.trim(),
+    age: parseInt(regAge.value),
+    gender: regGender.value,
+    phone: regPhone.value.trim(),
+    email: regEmail.value.trim(),
+    courseCategory: regCourseCategory.value,
+    className: regClassName.value.trim(),
+    instructor: regInstructor.value.trim(),
+    counselor: regCounselor.value.trim()
+  };
+
+  try {
+    const res = await fetch("/api/students", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req)
+    });
+    if(res.ok) {
+      alert("학생이 정상적으로 등록되었습니다.");
+      closeModal();
+      await Promise.all([loadSummary(), loadStudents(0), loadRisk()]);
+    } else {
+      const err = await res.text();
+      alert("등록 실패: " + err);
+    }
+  } catch(err) {
+    alert("오류 발생: " + err.message);
+  }
+};
+
+// 설정 > 화면에서 정한 기본 표시 개수를 반영 (목록에 없는 값이면 그냥 무시된다)
+if (typeof DaonPrefs !== "undefined") {
+  const preferredSize = String(DaonPrefs.get("listPageSize"));
+  if (Array.prototype.some.call(pageSize.options, o => o.value === preferredSize)) {
+    pageSize.value = preferredSize;
+  }
+}
+
+(async ()=>{
+  await Promise.all([loadSummary(), loadClasses(), loadRisk(), loadStudents(0)]);
+})();
+</script>
+</body>
+</html>

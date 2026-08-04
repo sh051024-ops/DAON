@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAON EDU | 리드 관리</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="/css/common.css" />
+</head>
+<body data-page="leads">
+<div class="app">
+  <div data-include="/partials/sidebar.html"></div>
+  <div class="main">
+    <div data-include="/partials/topbar.html"></div>
+    <main class="content">
+
+      <!-- 페이지 헤더 -->
+      <section class="page-head">
+        <div>
+          <h1>리드 관리</h1>
+          <p>상담 문의부터 등록 전환까지, 모든 리드의 흐름을 한눈에 확인하세요.</p>
+        </div>
+        <div class="page-head-actions">
+          <button class="btn-secondary" type="button" id="exportBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.6 2.4A2 2 0 0 0 4.5 21h15a2 2 0 0 0 1.9-1.6L22 17"/></svg>
+            내보내기
+          </button>
+          <button class="btn-primary" type="button" id="openAddModalBtn">
+            <span class="icon" style="-webkit-mask-image:url('/images/person.png');mask-image:url('/images/person.png')"></span>
+            신규 리드 등록
+          </button>
+        </div>
+      </section>
+
+      <!-- KPI 4칸 -->
+      <section class="kpi-grid-4">
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-blue"><span class="icon i-people-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">전체 리드</div>
+            <div class="kpi-value" id="kpiTotal">892<span class="kpi-unit">건</span></div>
+            <div class="kpi-delta" id="kpiTotalDelta"><span class="up">↑ 34건</span> · 직전 기간 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-green"><span class="icon i-person-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">신규 리드</div>
+            <div class="kpi-value" id="kpiNew">236<span class="kpi-unit">건</span></div>
+            <div class="kpi-delta" id="kpiNewDelta"><span class="up">↑ 18건</span> · 직전 기간 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-purple"><span class="icon i-call-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">상담 진행중</div>
+            <div class="kpi-value" id="kpiProgress">156<span class="kpi-unit">건</span></div>
+            <div class="kpi-delta" id="kpiProgressDelta"><span class="up">↑ 9건</span> · 직전 기간 대비</div>
+          </div>
+        </div>
+
+        <div class="card kpi-card">
+          <div class="kpi-icon bg-amber"><span class="icon i-percent-fill"></span></div>
+          <div class="kpi-body">
+            <div class="kpi-label">등록 전환율</div>
+            <div class="kpi-value" id="kpiRate">28.6<span class="kpi-unit">%</span></div>
+            <div class="kpi-delta" id="kpiRateDelta"><span class="up">↑ 3.2%p</span> · 직전 기간 대비</div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- 퍼널 / 후속 연락 필요 -->
+      <section class="panel-row" style="grid-template-columns: 1.6fr 1fr;">
+
+        <div class="card panel panel-flow">
+          <div class="panel-head">
+            <div class="panel-title">리드 흐름도</div>
+            <div class="panel-head-selects">
+              <div class="dropdown" id="cohortDropdown">
+                <div class="panel-select" id="cohortDropdownBtn">
+                  <span id="cohortDropdownLabel">전체 기수</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                <div class="dropdown-menu" id="cohortDropdownMenu" hidden></div>
+              </div>
+              <div class="dropdown" id="periodDropdown">
+                <div class="panel-select" id="periodDropdownBtn">
+                  <span id="periodDropdownLabel">전체 기간</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                <div class="dropdown-menu" id="periodDropdownMenu" hidden></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flow-chart-wrap" id="flowChartWrap"></div>
+
+          <div class="funnel-summary">
+            <div class="funnel-summary-main" id="flowSummaryMain">전환율 28.7%</div>
+            <div class="funnel-summary-sub" id="flowSummarySub">직전 기간 대비 <span class="up">▲ 3.5%p</span></div>
+          </div>
+        </div>
+
+
+        <div class="card panel panel-taller">
+          <div class="panel-head">
+            <div class="panel-title">후속 연락 필요</div>
+            <a class="more-link" href="#" id="followUpMoreLink">더보기</a>
+          </div>
+          <div class="list" id="leads-followup-list">
+            <div class="list-row">
+              <div class="row-main">
+                <div class="row-title" style="color: var(--text-500);">데이터를 로드하는 중...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 리드 목록 테이블 -->
+      <section class="card table-card">
+        <div class="panel-head" style="padding-left: 40px; padding-right: 40px;">
+          <div class="panel-title">리드 목록</div>
+          <div class="pagination-info" id="paginationInfo" style="margin-left: auto;">전체 0건 중 0건 표시</div>
+        </div>
+
+        <div class="toolbar" style="padding: 0 40px 18px;">
+          <div class="toolbar-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="이름, 연락처로 검색" />
+          </div>
+
+          <div class="filter-tabs" id="filterTabs">
+            <button class="filter-tab active" type="button" data-status="전체">전체<span class="count" id="countAll">9</span></button>
+            <button class="filter-tab" type="button" data-status="신규">신규<span class="count" id="countNew">0</span></button>
+            <button class="filter-tab" type="button" data-status="상담예정">상담예정<span class="count" id="countScheduled">0</span></button>
+            <button class="filter-tab" type="button" data-status="상담진행">상담진행<span class="count" id="countProgress">0</span></button>
+            <button class="filter-tab" type="button" data-status="등록완료">등록완료<span class="count" id="countDone">0</span></button>
+            <button class="filter-tab" type="button" data-status="이탈">이탈<span class="count" id="countLost">0</span></button>
+          </div>
+
+          <div class="toolbar-spacer"></div>
+
+          <div class="dropdown" id="managerDropdown">
+            <div class="toolbar-select" id="managerDropdownBtn">
+              <span id="managerDropdownLabel">담당자 전체</span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="dropdown-menu" id="managerDropdownMenu" hidden></div>
+          </div>
+
+          <div class="dropdown" id="sourceDropdown">
+            <div class="toolbar-select" id="sourceDropdownBtn">
+              <span id="sourceDropdownLabel">유입 경로 전체</span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="dropdown-menu" id="sourceDropdownMenu" hidden></div>
+          </div>
+        </div>
+
+        <div class="table-scroll" style="padding: 0 40px;">
+          <table class="lead-table">
+            <thead>
+              <tr>
+                <th style="width: 16%;">이름</th>
+                <th style="width: 11%;">연락처</th>
+                <th style="width: 12%;">관심 과정</th>
+                <th style="width: 10%;">유입 경로</th>
+                <th style="width: 12%;">담당자</th>
+                <th style="width: 9%;">상태</th>
+                <th style="width: 9%;">최근 연락일</th>
+                <th style="width: 21%; text-align: right;">관리</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTbody">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <div class="pagination-pages" id="paginationPages"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- 신규 리드 등록 모달 -->
+<div class="modal-overlay" id="addModal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="addModalTitle">신규 리드 등록</h3>
+      <button class="modal-close" type="button" id="closeAddModalBtn" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="addLeadForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="fieldName">이름<span class="required">*</span></label>
+          <input class="form-input" type="text" id="fieldName" placeholder="예: 김서연" />
+          <div class="form-hint" id="hintName"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fieldPhone">연락처<span class="required">*</span></label>
+          <input class="form-input" type="text" id="fieldPhone" placeholder="010-1234-5678" />
+          <div class="form-hint" id="hintPhone"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fieldCourse">관심 과정<span class="required">*</span></label>
+            <select class="form-select" id="fieldCourse">
+              <option value="">선택</option>
+              <option>웹 개발자 과정</option>
+              <option>데이터 분석 과정</option>
+              <option>UI/UX 디자인</option>
+              <option>AI 엔지니어링</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fieldSource">유입 경로<span class="required">*</span></label>
+            <select class="form-select" id="fieldSource">
+              <option value="">선택</option>
+              <option>홈페이지</option>
+              <option>지인추천</option>
+              <option>인스타 광고</option>
+              <option>블로그</option>
+              <option>네이버 검색</option>
+              <option>전화문의</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fieldManager">담당자<span class="required">*</span></label>
+            <select class="form-select" id="fieldManager">
+              <option value="">선택</option>
+              <option>김다온</option>
+              <option>이서현</option>
+              <option>박준영</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fieldStatus">상태</label>
+            <select class="form-select" id="fieldStatus">
+              <option>신규</option>
+              <option>상담예정</option>
+              <option>상담진행</option>
+              <option>등록완료</option>
+              <option>이탈</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fieldMemo">메모</label>
+          <textarea class="form-textarea" id="fieldMemo" placeholder="상담 시 참고할 내용을 남겨주세요 (선택)"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" type="button" id="cancelAddModalBtn">취소</button>
+        <button class="btn-primary" type="submit" id="addModalSubmitBtn">등록하기</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 리드 상세 / 상담기록 모달 -->
+<div class="modal-overlay" id="detailModal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>리드 상세</h3>
+      <button class="modal-close" type="button" id="closeDetailModalBtn" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-head">
+        <span class="row-avatar" id="detailAvatarWrap"><img id="detailAvatar" src="" alt="" /></span>
+        <div class="row-main">
+          <div class="row-title" id="detailName"></div>
+          <div class="row-sub" id="detailCourse"></div>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="detail-item-label">연락처</div>
+          <div class="detail-item-value" id="detailPhone"></div>
+        </div>
+        <div>
+          <div class="detail-item-label">유입 경로</div>
+          <div class="detail-item-value" id="detailSource"></div>
+        </div>
+        <div>
+          <div class="detail-item-label">담당자</div>
+          <div class="detail-item-value" id="detailManager"></div>
+        </div>
+        <div>
+          <div class="detail-item-label">최근 연락일</div>
+          <div class="detail-item-value" id="detailLastContact"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="detailStatus">상태 변경</label>
+        <select class="form-select" id="detailStatus">
+          <option>신규</option>
+          <option>상담예정</option>
+          <option>상담진행</option>
+          <option>등록완료</option>
+          <option>이탈</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="detailMemo">상담 기록</label>
+        <textarea class="form-textarea" id="detailMemo" placeholder="상담 내용을 기록해주세요"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" type="button" id="cancelDetailModalBtn">닫기</button>
+      <button class="btn-primary" type="button" id="saveDetailModalBtn">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/include.js"></script>
+<script src="/js/task-banner.js"></script>
+<script src="/js/leads.js"></script>
+</body>
+</html>
